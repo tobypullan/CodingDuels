@@ -1,17 +1,22 @@
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
-
+from sqlalchemy import create_engine
 # init SQLAlchemy so we can use it later in our models
 db = SQLAlchemy()
 
 def create_app():
     app = Flask(__name__)
-
+    # this is the external connection url, not the internal one
+    #engine = create_engine('postgresql://toby:GpYiCx5LQPoClKZI5TmIAXGIwIMyKDku@dpg-cl7mp02vokcc73anqkf0-a.frankfurt-postgres.render.com/codingduelsdb')
+    
     app.config['SECRET_KEY'] = 'toby1234'
-    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///db.sqlite'
+    #app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///db.sqlite'
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://toby:GpYiCx5LQPoClKZI5TmIAXGIwIMyKDku@dpg-cl7mp02vokcc73anqkf0-a.frankfurt-postgres.render.com/codingduelsdb'
 
     db.init_app(app)
+
+
 
     login_manager = LoginManager()
     login_manager.login_view = 'auth.login'
