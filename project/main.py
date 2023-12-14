@@ -97,9 +97,12 @@ def waiting_room(gameid, playerid):
 
 @main.route('/game/<gameid>/waiting_room/<playerid>', methods=['POST'])
 def waiting_room_post(gameid, playerid):
-    if gameStarted == True:
-        return redirect('/game/' + str(gameid) + '/competition/' + str(playerid))
-    else:
+    try:
+        if gameStarted == True:
+            return redirect('/game/' + str(gameid) + '/competition/' + str(playerid))
+        else:
+            return render_template('waiting_room.html', gameid=gameid, playerid=playerid, waitWarning="Please wait for the host to start the game")
+    except:
         return render_template('waiting_room.html', gameid=gameid, playerid=playerid, waitWarning="Please wait for the host to start the game")
 
 @main.route('/game/<gameid>/compeition', methods=['POST'])
