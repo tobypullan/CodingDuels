@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block content %}
+The questions: 
+{% for question in questions %} 
+"{{question}}", 
+{% endfor %} 
+{{ questions }}
+The game id: {{ gameid }}
+<form method="POST">
+    <button type="submit"> REFRESH </button>
+</form>
+<p>
+    NAMES:
+    {% for name in playerNames %}
+    {{ name }}
+    {% endfor %}
+</p>
+<form method="POST" action = "/game/{{ gameid }}/compeition">
+    <button type="submit"> Start Game </button>
+</form>
+{% endblock %}

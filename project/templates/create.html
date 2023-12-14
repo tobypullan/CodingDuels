@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block content %}
+<head>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.js">   
+    </script>   
+    
+    <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.16/jquery-ui.js">   
+    </script>   
+    
+    <link href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.16/themes/ui-lightness/jquery-ui.css"
+        rel="stylesheet" type="text/css" />   
+</head>
+<body>
+
+<h1> {{ title }} </h1>
+
+<form method="POST">
+    <input name="questionTitle" type="text" id="tags"> 
+    <input type="submit" value="Submit">
+    <button type="submit" formaction="/select_question"> Select Question </button>
+    <button type="submit" formaction="/start_game"> Start Game </button>
+</form>
+    {{ titles }}
+<script> 
+  $( function() { 
+    var availableTags = [ 
+        {% for title in titles %} 
+            "{{title}}", 
+        {% endfor %} 
+    ]; 
+    $( "#tags" ).autocomplete({ 
+      source: availableTags
+    }); 
+  } ); 
+</script>
+  <p>Title:  {{ title }}</p>
+  <p>Description: {{ description }}</p>
+  <p>Difficulty: {{ difficulty }}</p>  
+</body>
+{% endblock %}
