@@ -5,10 +5,11 @@ from sqlalchemy import create_engine
 from flask_socketio import SocketIO
 # init SQLAlchemy so we can use it later in our models
 db = SQLAlchemy()
+socketio = SocketIO()
 
 def create_app():
     app = Flask(__name__)
-    socketio = SocketIO(app)
+    socketio.init_app(app)
     # this is the external connection url, not the internal one
     engine = create_engine('postgresql://toby:GpYiCx5LQPoClKZI5TmIAXGIwIMyKDku@dpg-cl7mp02vokcc73anqkf0-a.frankfurt-postgres.render.com/codingduelsdb')
 
@@ -38,6 +39,8 @@ def create_app():
     # blueprint for non-auth parts of app
     from .main import main as main_blueprint
     app.register_blueprint(main_blueprint)
+
+    return app
 
 # if __name__ == '__main__':
 #     socketio.run(app, debug=True)
