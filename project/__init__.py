@@ -7,7 +7,7 @@ from flask_socketio import SocketIO
 db = SQLAlchemy()
 socketio = SocketIO()
 
-def create_app():
+def create_app(script_info=None, **kwargs):
     app = Flask(__name__)
     socketio.init_app(app)
     # this is the external connection url, not the internal one

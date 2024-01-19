@@ -3,6 +3,15 @@ def SumOfList(n):
         return 0
     else:
         return n[0] + SumOfList(n[1:])
+    
+def FibSeqGen(n):
+    if n == 0:
+        return []
+    elif n == 1:
+        return [1]
+    else:
+        return FibSeqGen(n-1) + [FibSeqGen(n-1)[-1] + FibSeqGen(n-1)[-2]]
+
   
 questionSolutionFuncs = {4: SumOfList}
 
