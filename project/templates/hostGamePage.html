@@ -1,4 +1,94 @@
 {% extends "base.html" %}
 {% block content %}
-LEADERBOARD:
+<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"
+    integrity="sha512-q/dWJ3kcmjBLU4Qc47E4A9kTB4m3wuTY7vkFJDTZKjTs8jhyGQnaUrxa0Ytd0ssMZhbNua9hE+E7Qv1j+DyZwA=="
+    crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.js">
+</script>
+<script type="text/javascript" charset="utf-8">
+    var socket = io();
+    var scores = {};
+    var players = [];
+    var scoresArray = [];
+    var playerScores = [];
+    socket.on('question answered', function (data) {
+        console.log(data);
+        var player = data.player;
+        var questionName = data.question;
+
+        if (scores[player] == undefined) {
+            scores[player] = 0;
+            players.push(player);
+        }
+        scores[player] += 1;
+
+        // scoresArray = Object.entries(scores);
+        // // Sort the array based on the second element
+        // scoresArray.sort(function(first, second) {
+        //     return second[1] - first[1];
+        // });
+        //push all scores from scores to playerScores array
+        playerScores = [];
+        for (var key in scores) {
+            playerScores.push(scores[key]);
+        }
+        console.log(scoresArray);
+        myChart.data.labels = players;
+        myChart.data.datasets[0].data = playerScores;
+        myChart.update();
+
+        // var leaderboard = document.getElementById("leaderboard");
+        // leaderboard.innerHTML = "";
+        // scoresArray.forEach(function (playerScore) {
+        //     var score = playerScore[1];
+        //     console.log(playerScore);
+        //     console.log(score);
+        //     var li = document.createElement("li");
+        //     li.innerHTML = playerScore[0] + ": " + score;
+        //     leaderboard.appendChild(li);
+        // });
+
+
+    });
+</script>
+<div class="content">
+    <h1>LEADERBOARD:</h1>
+    <!-- <div class="columns">
+        <div class="column">
+            <ul id="leaderboard">
+            </ul>
+        </div> -->
+        <div class="column" style="display: flex; justify-content: center;">
+            <canvas id="leaderboardChart" style="width:100%;max-width:700px"></canvas>
+        </div>
+    </div>
+    <script>
+        const myChart = new Chart("leaderboardChart", {
+            type: "bar",
+            data: {
+                labels: players,
+                datasets: [{
+                    label: "Scores",
+                    data: scoresArray,
+                    backgroundColor:
+                        'rgba(255, 99, 132, 0.2)',
+                    borderColor:
+                        'rgba(255, 99, 132, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                scales: {
+                    yAxes: [{
+                        ticks: {
+                            beginAtZero: true,
+                            min: 0,
+                            max: {{ numberOfQuestions }}
+                        }
+                    }]
+                }
+            }
+        });
+    </script>
+</div>
 {% endblock %}

@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block content %}
+<script
+    src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.js">
+</script>
+<div style="display: flex; justify-content: center;">
+<canvas id="leaderboard" style="width:100%;max-width:700px"></canvas>
+</div>
+<script>
+    let badScores = '{{ playerScores }}'.split(",");
+    let scores = badScores.map((x) => x.replace(/\[*\]*/g, ""));
+    let badNames = '{{ playerNames }}'.split(",");
+    console.log(badNames)
+    let players = badNames.map((x) => x.replace(/\[*&#39;\]*/g, ""));
+    console.log(players)
+    console.log(scores)
+    const myChart = new Chart("leaderboard", {
+    type: "bar",
+    data: {labels: players,
+    datasets: [{
+        label: 'Scores',
+        data: scores,
+        backgroundColor: 
+            'rgba(255, 99, 132, 0.2)',
+        borderColor:
+            'rgba(255, 99, 132, 1)',
+        borderWidth: 1
+    }]},
+    options: {
+        scales: {
+            yAxes: [{
+                ticks: {
+                    beginAtZero: true
+                }
+            }]
+        }
+    }
+});
+</script>
+
+{% endblock %}

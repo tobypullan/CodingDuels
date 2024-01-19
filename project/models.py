@@ -15,6 +15,7 @@ class Questions(db.Model):
     title = db.Column(db.String(1000))
     description = db.Column(db.String(1000))
     difficulty = db.Column(db.Integer)
+    answers = db.Column(db.Integer)
     def get_id(self):
            return (self.questionid)
     
@@ -30,5 +31,6 @@ class game_players(db.Model):
     playerid = db.Column(db.String(1000), Sequence('game_players_id_seq'), primary_key=True) # primary keys are required by SQLAlchemy
     gameid = db.Column(db.Integer)
     playername = db.Column(db.String(255))
+    questionsanswered = db.Column(db.Integer)
     def get_id(self):
            return (self.gameid)

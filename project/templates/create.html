@@ -1,40 +1,267 @@
 {% extends "base.html" %}
 {% block content %}
+
 <head>
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.js">   
-    </script>   
-    
-    <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.16/jquery-ui.js">   
-    </script>   
-    
-    <link href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.16/themes/ui-lightness/jquery-ui.css"
-        rel="stylesheet" type="text/css" />   
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.js">
+  </script>
+  <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.16/jquery-ui.js">
+  </script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+  <link href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.16/themes/ui-lightness/jquery-ui.css" rel="stylesheet"
+    type="text/css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css">
 </head>
+
 <body>
 
-<h1> {{ title }} </h1>
+  <h1> {{ title }} </h1>
+  <!-- <form method="POST">
+      <div class="columns">
+      <div class="column">
+        <input name="questionTitle" type="text" id="tags" class="input is-half" placeholder="Search for questions">
+      </div>
+        <input type="submit" value="Submit" class="button"> 
+      <div class="column">
+        <button type="submit" formaction="/select_question" class="button is-one-quarter" id="selectQuestion"> Select Question </button>
+      </div>
+      <div class="column">
+        <button type="submit" formaction="/start_game" class="button is-one-quarter" id="startGame"> Start Game </button>
+      </div>
+      </div>
+    </form> -->
 
-<form method="POST">
-    <input name="questionTitle" type="text" id="tags"> 
-    <input type="submit" value="Submit">
-    <button type="submit" formaction="/select_question"> Select Question </button>
-    <button type="submit" formaction="/start_game"> Start Game </button>
-</form>
-    {{ titles }}
-<script> 
-  $( function() { 
-    var availableTags = [ 
-        {% for title in titles %} 
-            "{{title}}", 
-        {% endfor %} 
-    ]; 
-    $( "#tags" ).autocomplete({ 
+  <div class="columns">
+    <div class="column">
+      <input name="questionTitle" type="text" id="tags" class="input is-narrow" placeholder="Search for questions">
+    </div>
+    <div class="column">
+      <button type="button" class="button is-narrow" id="selectQuestion"> Select Question </button>
+    </div>
+    <form method="POST">
+      <div class="column">
+        <button type="submit" formaction="/start_game" class="button is-narrow"> Start Game </button>
+      </div>
+  </div>
+  <script>
+    $(function () {
+      var availableTags = [
+        {% for question in questionData %} 
+            "{{question.title}}",
+      {% endfor %} 
+    ];
+    $("#tags").autocomplete({
       source: availableTags
     }); 
   } ); 
-</script>
-  <p>Title:  {{ title }}</p>
-  <p>Description: {{ description }}</p>
-  <p>Difficulty: {{ difficulty }}</p>  
+  </script>
+
+  <script>
+    var socket = io();
+    document.getElementById("selectQuestion").onclick = function () {
+      console.log("emitting selected question")
+      let tagsElement = document.getElementById("tags");
+      socket.emit("select question", { tags: tagsElement.value });
+    };
+  </script>
+
+  <script>
+    var socket = io();
+    document.getElementById("removeQuestion").onclick = function () {
+      socket.emit("remove question", { questionTitle: document.getElementById("removeQuestionTitle").value });
+    };
+  </script>
+  <!-- <script>
+      document.getElementById("startGame").onclick = function () {
+        socket.emit("start game");
+      };
+    </script> -->
+
+  <!-- <div class="content">
+      <p>Title: {{ title }}</p>
+      <p>Description: {{ description }}</p>
+      <p>Difficulty: {{ difficulty }}</p>
+    </div> -->
+  <div class="columns">
+    <div class="column">
+      <table class="table" id="addTable">
+        <thread>
+          <tr>
+            <th>Question</th>
+            <th>Difficulty</th>
+            <th>Description</th>
+            <th>Add</th>
+          </tr>
+        </thread>
+        <tbody>
+          {% for question in questionData %}
+          <tr>
+            <td>{{ question.title }}</td>
+            <td>{{ question.difficulty }}</td>
+            <td>{{ question.description }}</td>
+            <td>
+              <!-- <input type="hidden" name="questionTitle" value="{{ question.title }}">
+              <input type="hidden" name="questionDifficulty" value="{{ question.difficulty }}"> -->
+              <button type="button" id="selectQuestionTable" class="button is-one-quarter selectQuestionTable"
+                titleData="{{ question.title}}"> Add </button>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    <script>
+      var socketio = io();
+      var buttons = document.getElementsByClassName("selectQuestionTable");
+      for (var i = 0; i < buttons.length; i++) {
+        buttons[i].onclick = function () {
+          console.log("emitting question" + i + this.getAttribute("titleData"))
+          socketio.emit("select question", { title: this.getAttribute("titleData") });
+        };
+      }
+    </script>
+<!-- 
+    <script>
+      var socketio = io();
+      var buttons = document.getElementsByClassName("removeQuestionTable");
+      console.log("buttons: " + buttons)
+      for (var i = 0; i < buttons.length; i++) {
+        buttons[i].onclick = function () {
+          console.log("emitting question for removal" + i + this.getAttribute("titleData"))
+          socketio.emit("remove question", { title: this.getAttribute("titleData") });
+        };
+      }
+    </script> -->
+    <div class="column">
+      <table class="table" id="removeTable">
+        <thread>
+          <tr>
+            <th>Question</th>
+            <th>Remove</th>
+          </tr>
+        </thread>
+        <tbody>
+          <!-- {% for question in selectedQuestions %}
+      <tr>
+        <td id="removeQuestionTitle">{{ question.title }}</td>
+        <td>{{ question.difficulty }}</td>
+        <td>{{ question.description }}</td>
+        <td>
+          <input type="hidden" name="questionTitle" value="{{ question.title }}">
+              <input type="hidden" name="questionDifficulty" value="{{ question.difficulty }}"> 
+          <button type="button" id="removeQuestionTable" class="button is-one-quarter removeQuestionTable"> Remove
+          </button>
+        </td>
+      </tr>
+      {% endfor %} -->
+      </table>
+    </div>
+  </div>
+
+  <script>
+    socketio.on("question removed", function (data) {
+      console.log("running question removed function");
+      removeFromRemoval(data["title"]);
+      showNotification(data["title"], "removed");
+    });
+  </script>
+  <script>
+    function showNotification(data, type) {
+      console.log("showing notification")
+      console.log(data)
+      var exisitingNotification = document.getElementById("notification");
+      if (exisitingNotification) {
+        exisitingNotification.parentNode.removeChild(exisitingNotification);
+        console.log("removed existing notification")
+      }
+
+      var notification = document.createElement("div");
+      if (type == "selected") {
+        notification.className = "notification is-success";
+      } else if (type == "removed") {
+        notification.className = "notification is-danger";
+      }
+      notification.id = "notification";
+      // notification.style.position = "fixed"; // Add this line
+      // notification.style.zIndex = "1000"; // Add this line
+      // notification.style.left = "50%"; // Add this line
+      // notification.style.top = "50%"; // Add this line
+      // notification.style.transform = "translate(-50%, -50%)"; // Add this line
+      // notification.style.backgroundColor = "white"; // Add this line
+      // notification.style.padding = "20px"; // Add this line
+      // notification.style.border = "1px solid black"; // Add this line
+
+      notification.style.position = "fixed"; // Position the notification fixed
+      notification.style.bottom = "20px"; // 20px from the bottom
+      notification.style.right = "20px"; // 20px from the right
+
+      notification.textContent = data + " has been " + type;
+      var deleteButton = document.createElement("button");
+      deleteButton.className = "delete";
+      deleteButton.type = "button";
+      deleteButton.addEventListener('click', function () {
+        notification.parentNode.removeChild(notification);
+      });
+      notification.appendChild(deleteButton);
+      document.body.appendChild(notification);
+    }
+  </script>
+  <!-- from the bulma documentation: -->
+  <script>
+    // document.addEventListener('DOMContentLoaded', () => {
+    //   (document.querySelectorAll('.notification .delete') || []).forEach(($delete) => {
+    //     const $notification = $delete.parentNode;
+
+    //     $delete.addEventListener('click', () => {
+    //       $notification.parentNode.removeChild($notification);
+    //     });
+    //   });
+    // });
+  </script>
+  <script>
+    function addQuestionToRemoval(data) {
+      var table = document.getElementById("removeTable");
+      var row = document.createElement("tr");
+      var question = document.createElement("td");
+      question.textContent = data["title"];
+      var remove = document.createElement("td");
+      var removeButton = document.createElement("button");
+      removeButton.type = "button";
+      removeButton.className = "button is-one-quarter removeQuestionTable";
+      removeButton.textContent = "Remove";
+      removeButton.onclick = function () {
+        socketio.emit("remove question", { title: data["title"] });
+        console.log("emitting question for removal" + data["title"])
+      };
+      remove.appendChild(removeButton);
+      row.appendChild(question);
+      row.appendChild(remove);
+      table.appendChild(row);
+    }
+  </script>
+  <script>
+    socketio.on("question selected", function (data) {
+      console.log(data);
+      showNotification(data.title, "selected");
+      addQuestionToRemoval(data);
+    });
+  </script>
+  <script>
+    function removeFromRemoval(title) {
+      console.log("running remove from removal function")
+      var table = document.getElementById("removeTable");
+      var rows = table.getElementsByTagName("tr");
+      for (var i = 1; i < rows.length + 1; i++) {
+        var row = rows[i];
+        console.log(row)
+        var question = row.getElementsByTagName("td")[0].textContent;
+        console.log(question)
+        console.log(title)
+        if (question == title) {
+          console.log("removing row - running if statement")
+          row.parentNode.removeChild(row);
+        }
+      }
+    }
+  </script>
 </body>
 {% endblock %}

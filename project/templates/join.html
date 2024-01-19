@@ -1,9 +1,20 @@
 {% extends "base.html" %}
-
 {% block content %}
 Enter your name:
 <form method="POST">
-    <input name="playername" type="text" id="tags">
-    <input type="submit" value="Submit">
+    <input name="playername" type="text" id="tags" class="input">
+    <input type="submit" value="Submit" class="button" id="submitName">
 </form>
+
+<!-- <script>
+    var socket = io();
+    document.getElementById("submitName").onclick = function (event) {
+        event.preventDefault();
+        let nameElement = document.getElementById("tags");
+        console.log(nameElement.value)
+        socket.emit("new player", { name: nameElement.value });
+    };
+</script> -->
+
+
 {% endblock %}

@@ -1,8 +1,86 @@
 {% extends "base.html" %}
 {% block content %}
-{% for question in questions %}
+<div class="content">
+<div id="timer"></div>
+<form method="POST" id="answersForm">
+{% for question, description in questionsAndDescriptions %}
+Question:
 {{ question }}
+<br>
+Description:
+{{ description }}
+<br>
 ANSWER:
+    <input name="{{ question }}" type="text" id="{{ question }}" class="input" placeholder="{{ question }}">
+    <button type="button" onclick="submitTextbox('{{ question }}')" class="button"> Submit </button>
+    <div id="{{ question }}-result"></div>
+<br>
 <br>
 {% endfor %}
+</form>
+<button class="button" id="endButton" type="button" style="display: none" onclick="seeLeaderboard()"> See Leaderboard </button>
+<script>
+    function lockAnswerBoxes(name){
+        var answerboxes = document.querySelectorAll("input[type=text]");
+        answerboxes.forEach(function(answerbox){
+            answerbox.disabled = true;
+        });
+    }
+
+    function showButton(){
+        var button = document.getElementById("endButton");
+        button.style.display = "block";
+    }
+
+    var countdownDuration = 100;
+
+    var now = new Date().getTime();
+    var endTime = now + countdownDuration * 1000; // convert seconds to milliseconds
+
+    var x = setInterval(function() {
+        var now = new Date().getTime();
+        var distance = endTime - now;
+
+        var seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+        document.getElementById("timer").innerHTML = seconds + "s";
+
+        if (distance < 0) {
+            clearInterval(x);
+            document.getElementById("timer").innerHTML = "EXPIRED";
+            lockAnswerBoxes();
+            showButton();
+        }
+    }, 1000);
+
+    function submitTextbox(name){
+        var content = document.getElementById(name).value;
+
+        var xhr = new XMLHttpRequest();
+        xhr.open("POST", "/game/{{ gameid }}/competition/{{ playerid }}", true);
+        xhr.setRequestHeader('Content-Type', 'application/json');
+        xhr.onreadystatechange = function() {
+            if (xhr.readyState == XMLHttpRequest.DONE && xhr.status == 200) {
+                var response = xhr.responseText.split("+");
+                console.log(response);
+                var question = response[0];
+                var result = response[1];
+                var resultDiv = document.getElementById(question + "-result");
+                if (result == "correct"){
+                    resultDiv.innerHTML = "Correct!";
+                    var answerbox = document.getElementById(question);
+                    answerbox.disabled = true;
+                } else {
+                    resultDiv.innerHTML = "Incorrect!";
+                }
+            }
+        };
+        var data = JSON.stringify({"question": name, "answer": content});
+        xhr.send(data);
+    }
+
+    function seeLeaderboard(){
+        window.location.href = "/game/{{ gameid }}/leaderboard/players";
+    }
+</script>
 {% endblock %}
