@@ -11,7 +11,7 @@ def create_app(*args, **kwargs):
     print(args)
     print(kwargs)
     app = Flask(__name__)
-    socketio.init_app(app)
+    
     print("socketio init")
     # this is the external connection url, not the internal one
     engine = create_engine('postgresql://toby:GpYiCx5LQPoClKZI5TmIAXGIwIMyKDku@dpg-cl7mp02vokcc73anqkf0-a.frankfurt-postgres.render.com/codingduelsdb')
@@ -42,9 +42,10 @@ def create_app(*args, **kwargs):
     # blueprint for non-auth parts of app
     from .main import main as main_blueprint
     app.register_blueprint(main_blueprint)
+    socketio.init_app(app)
     print("about to return app")
     print(type(app))
-    return app
+    return socketio
 
 # if __name__ == '__main__':
 #     socketio.run(app, debug=True)
