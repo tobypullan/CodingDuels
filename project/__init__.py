@@ -8,8 +8,8 @@ db = SQLAlchemy()
 socketio = SocketIO()
 
 def create_app(*args, **kwargs):
-    print("args: " + args)
-    print("kwargs: " + kwargs)
+    print(args)
+    print(kwargs)
     app = Flask(__name__)
     socketio.init_app(app)
     # this is the external connection url, not the internal one
