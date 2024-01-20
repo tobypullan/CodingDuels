@@ -13,6 +13,7 @@ main = Blueprint('main', __name__)
 
 @main.route('/')
 def index():
+    print("attempting to render index.html")
     return render_template('index.html')
 
 @main.route('/profile')
