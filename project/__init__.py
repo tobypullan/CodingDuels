@@ -43,6 +43,7 @@ def create_app(*args, **kwargs):
     from .main import main as main_blueprint
     app.register_blueprint(main_blueprint)
     print("about to return app")
+    print(type(app))
     return app
 
 # if __name__ == '__main__':
