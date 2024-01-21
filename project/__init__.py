@@ -3,7 +3,6 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
 from sqlalchemy import create_engine
 from flask_socketio import SocketIO
-from engineio.middleware import Middleware
 # init SQLAlchemy so we can use it later in our models
 db = SQLAlchemy()
 socketio = SocketIO()
@@ -46,7 +45,6 @@ def create_app(*args, **kwargs):
     socketio.init_app(app)
     print("about to return app")
     print(type(app))
-    app.wsgi_app = Middleware(socketio, app.wsgi_app)
     return app
 
 # if __name__ == '__main__':
