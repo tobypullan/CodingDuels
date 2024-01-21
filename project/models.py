@@ -1,4 +1,4 @@
-from . import db
+from .myapp import db
 from flask_login import UserMixin
 from sqlalchemy import Sequence
 

@@ -3,6 +3,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
 from sqlalchemy import create_engine
 from flask_socketio import SocketIO
+
 # init SQLAlchemy so we can use it later in our models
 db = SQLAlchemy()
 socketio = SocketIO()

@@ -1,12 +1,12 @@
 from flask import Blueprint, render_template, request, redirect, jsonify
 from flask_login import login_required, current_user
-from . import db
+from .myapp import db
 from .models import Questions, Games, game_players
 #from sqlalchemy import update, func
 from random import randint
 import requests
 from flask_socketio import SocketIO
-from . import socketio
+from .myapp import socketio
 
 
 main = Blueprint('main', __name__)
