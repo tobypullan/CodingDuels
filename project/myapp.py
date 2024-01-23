@@ -43,7 +43,7 @@ def create_app(*args, **kwargs):
     # blueprint for non-auth parts of app
     from .main import main as main_blueprint
     app.register_blueprint(main_blueprint)
-    socketio.init_app(app)
+    socketio.init_app(app, cors_allowed_origins="*")
     print("about to return app")
     print(type(app))
     return app
