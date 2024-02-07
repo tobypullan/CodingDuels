@@ -5,7 +5,7 @@ from .models import Questions, Games, game_players
 #from sqlalchemy import update, func
 from random import randint
 import requests
-from flask_socketio import SocketIO
+from flask_socketio import SocketIO, join_room, leave_room
 from .myapp import socketio
 
 
@@ -25,16 +25,23 @@ def profile():
 @login_required
 def create():
     questionData = Questions.query.all()
-    global gameid
-    gameid = randint(0, 1000000000)
+
     return render_template('create.html', questionData=questionData)
 
+@socketio.on("join room")
+def handle_join_room():
+    gameid = randint(0, 1000000000)
+    join_room(gameid)
+    print("room created")
+    socketio.emit("room created", gameid, room=gameid)
+
+
 @socketio.on("select question")
-def handle_select_question(questionTitle):
-    print(questionTitle)
-    print(type(questionTitle))
-    questionid = Questions.query.filter_by(title=questionTitle["title"]).first()
-    newGameQuestion = Games(gameid=gameid, gamequestions=questionid.questionid, personid=current_user.personid)
+def handle_select_question(data):
+    print(data)
+    print(type(data))
+    questionid = Questions.query.filter_by(title=data["title"]).first()
+    newGameQuestion = Games(gameid=data["gameid"], gamequestions=questionid.questionid, personid=current_user.personid)
     db.session.add(newGameQuestion)
     db.session.commit()
     socketio.emit("question selected", {"title": questionid.title, "description": questionid.description, "difficulty": questionid.difficulty})
@@ -85,6 +92,7 @@ def handle_remove_question(questionTitle):
 @main.route('/start_game', methods=['POST'])
 @login_required
 def start_game():
+    gameid = request.form.get('gameid')
     return redirect('/game/' + str(gameid))
 
 @main.route('/game/<gameid>')

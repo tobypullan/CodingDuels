@@ -10,10 +10,23 @@
   <!-- <link href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.16/themes/ui-lightness/jquery-ui.css" rel="stylesheet"
     type="text/css" /> -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css">
+  <script src="/static/create.js"></script>
 </head>
 
 <body>
-
+  <!-- <script>
+    var socket = io();
+    console.log("creating room")
+    socket.emit("join room");
+    socket.on("room created", function (data) {
+      console.log("room joined");
+      console.log(data);
+      var gameid = data;
+      console.log(gameid)
+      // socket.emit('join room', {room: gameid});
+    });
+    document.getElementById("gameid-input").value = gameid;
+  </script> -->
   <h1> {{ title }} </h1>
   <!-- <form method="POST">
       <div class="columns">
@@ -39,6 +52,7 @@
     </div>
     <form method="POST">
       <div class="column">
+        <input type="hidden" name="gameid" id="gameid-input">
         <button type="submit" formaction="/start_game" class="button is-narrow"> Start Game </button>
       </div>
   </div>
@@ -55,8 +69,7 @@
   } ); 
   </script>
 
-  <script>
-    var socket = io();
+  <!-- <script>
     socket.on("connect_error", (err) => {
       console.log(`connect_error due to ${err.message}`);
       console.log(err.description);
@@ -65,16 +78,16 @@
     document.getElementById("selectQuestion").onclick = function () {
       console.log("emitting selected question")
       let tagsElement = document.getElementById("tags");
-      socket.emit("select question", { tags: tagsElement.value });
+      socket.to(gameid).emit("select question", { tags: tagsElement.value, gameid: gameid });
     };
-  </script>
+  </script> -->
 
-  <script>
+  <!-- <script>
     var socket = io();
     document.getElementById("removeQuestion").onclick = function () {
-      socket.emit("remove question", { questionTitle: document.getElementById("removeQuestionTitle").value });
+      socket.to(gameid).emit("remove question", { questionTitle: document.getElementById("removeQuestionTitle").value });
     };
-  </script>
+  </script> -->
   <!-- <script>
       document.getElementById("startGame").onclick = function () {
         socket.emit("start game");
@@ -114,17 +127,17 @@
         </tbody>
       </table>
     </div>
-    <script>
+    <!-- <script>
       var socketio = io();
       var buttons = document.getElementsByClassName("selectQuestionTable");
       for (var i = 0; i < buttons.length; i++) {
         buttons[i].onclick = function () {
           console.log("emitting question" + i + this.getAttribute("titleData"))
-          socketio.emit("select question", { title: this.getAttribute("titleData") });
+          socketio.emit("select question", { title: this.getAttribute("titleData") , gameid: gameid});
         };
       }
-    </script>
-<!-- 
+    </script> -->
+    <!-- 
     <script>
       var socketio = io();
       var buttons = document.getElementsByClassName("removeQuestionTable");
@@ -162,14 +175,14 @@
     </div>
   </div>
 
-  <script>
+  <!-- <script>
     socketio.on("question removed", function (data) {
       console.log("running question removed function");
       removeFromRemoval(data["title"]);
       showNotification(data["title"], "removed");
     });
-  </script>
-  <script>
+  </script> -->
+  <!-- <script>
     function showNotification(data, type) {
       console.log("showing notification")
       console.log(data)
@@ -209,7 +222,7 @@
       notification.appendChild(deleteButton);
       document.body.appendChild(notification);
     }
-  </script>
+  </script> -->
   <!-- from the bulma documentation: -->
   <script>
     // document.addEventListener('DOMContentLoaded', () => {
@@ -222,7 +235,7 @@
     //   });
     // });
   </script>
-  <script>
+  <!-- <script>
     function addQuestionToRemoval(data) {
       var table = document.getElementById("removeTable");
       var row = document.createElement("tr");
@@ -242,15 +255,15 @@
       row.appendChild(remove);
       table.appendChild(row);
     }
-  </script>
-  <script>
+  </script> -->
+  <!-- <script>
     socketio.on("question selected", function (data) {
       console.log(data);
       showNotification(data.title, "selected");
       addQuestionToRemoval(data);
     });
-  </script>
-  <script>
+  </script> -->
+  <!-- <script>
     function removeFromRemoval(title) {
       console.log("running remove from removal function")
       var table = document.getElementById("removeTable");
@@ -267,6 +280,6 @@
         }
       }
     }
-  </script>
+  </script> -->
 </body>
 {% endblock %}
