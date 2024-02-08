@@ -14,21 +14,6 @@
 </head>
 
 <body>
-<<<<<<< HEAD
-  <!-- <script>
-    var socket = io();
-    console.log("creating room")
-    socket.emit("join room");
-    socket.on("room created", function (data) {
-      console.log("room joined");
-      console.log(data);
-      var gameid = data;
-      console.log(gameid)
-      // socket.emit('join room', {room: gameid});
-    });
-    document.getElementById("gameid-input").value = gameid;
-  </script> -->
-=======
   <script>
         var gameid = Math.floor(Math.random() * 100000);
         console.log(gameid)
@@ -39,7 +24,6 @@
           console.log(data)
         });
   </script>
->>>>>>> tmp
   <h1> {{ title }} </h1>
 
   <div class="columns">
@@ -68,48 +52,21 @@
   } ); 
   </script>
 
-<<<<<<< HEAD
-  <!-- <script>
-    socket.on("connect_error", (err) => {
-      console.log(`connect_error due to ${err.message}`);
-      console.log(err.description);
-      console.log(err.context)
-    });
-    document.getElementById("selectQuestion").onclick = function () {
-      console.log("emitting selected question")
-      let tagsElement = document.getElementById("tags");
-      socket.to(gameid).emit("select question", { tags: tagsElement.value, gameid: gameid });
-=======
   <script>
     // var socket = io();
     document.getElementById("selectQuestion").onclick = function () {
       console.log("emitting selected question")
       let tagsElement = document.getElementById("tags");
       socket.emit("select question", { title: tagsElement.value , "gameid": gameid});
->>>>>>> tmp
     };
   </script> -->
 
-<<<<<<< HEAD
-  <!-- <script>
-    var socket = io();
-=======
   <script>
     // var socket = io();
->>>>>>> tmp
     document.getElementById("removeQuestion").onclick = function () {
       socket.to(gameid).emit("remove question", { questionTitle: document.getElementById("removeQuestionTitle").value });
     };
-<<<<<<< HEAD
-  </script> -->
-  <!-- <script>
-      document.getElementById("startGame").onclick = function () {
-        socket.emit("start game");
-      };
-    </script> -->
-=======
   </script>
->>>>>>> tmp
 
   <div class="columns">
     <div class="column">
@@ -137,41 +94,17 @@
         </tbody>
       </table>
     </div>
-<<<<<<< HEAD
-    <!-- <script>
-      var socketio = io();
-=======
     <script>
       // var socketio = io();
->>>>>>> tmp
       var buttons = document.getElementsByClassName("selectQuestionTable");
       for (var i = 0; i < buttons.length; i++) {
         buttons[i].onclick = function () {
           console.log("emitting question" + i + this.getAttribute("titleData"))
-<<<<<<< HEAD
-          socketio.emit("select question", { title: this.getAttribute("titleData") , gameid: gameid});
-        };
-      }
-    </script> -->
-    <!-- 
-    <script>
-      var socketio = io();
-      var buttons = document.getElementsByClassName("removeQuestionTable");
-      console.log("buttons: " + buttons)
-      for (var i = 0; i < buttons.length; i++) {
-        buttons[i].onclick = function () {
-          console.log("emitting question for removal" + i + this.getAttribute("titleData"))
-          socketio.emit("remove question", { title: this.getAttribute("titleData") });
-        };
-      }
-    </script> -->
-=======
           socket.emit("select question", { title: this.getAttribute("titleData") ,"gameid": gameid});
         };
       }
     </script>
 
->>>>>>> tmp
     <div class="column">
       <table class="table" id="removeTable">
         <thread>
@@ -186,13 +119,8 @@
     </div>
   </div>
 
-<<<<<<< HEAD
-  <!-- <script>
-    socketio.on("question removed", function (data) {
-=======
   <script>
     socket.on("question removed", function (data) {
->>>>>>> tmp
       console.log("running question removed function");
       removeFromRemoval(data["title"]);
       showNotification(data["title"], "removed");
@@ -238,25 +166,8 @@
       notification.appendChild(deleteButton);
       document.body.appendChild(notification);
     }
-<<<<<<< HEAD
-  </script> -->
-  <!-- from the bulma documentation: -->
-  <script>
-    // document.addEventListener('DOMContentLoaded', () => {
-    //   (document.querySelectorAll('.notification .delete') || []).forEach(($delete) => {
-    //     const $notification = $delete.parentNode;
-
-    //     $delete.addEventListener('click', () => {
-    //       $notification.parentNode.removeChild($notification);
-    //     });
-    //   });
-    // });
-  </script>
-  <!-- <script>
-=======
   </script>
   <script>
->>>>>>> tmp
     function addQuestionToRemoval(data) {
       var table = document.getElementById("removeTable");
       var row = document.createElement("tr");
@@ -276,15 +187,9 @@
       row.appendChild(remove);
       table.appendChild(row);
     }
-<<<<<<< HEAD
-  </script> -->
-  <!-- <script>
-    socketio.on("question selected", function (data) {
-=======
   </script>
   <script>
     socket.on("question selected", function (data) {
->>>>>>> tmp
       console.log(data);
       showNotification(data.title, "selected");
       addQuestionToRemoval(data);
