@@ -14,6 +14,7 @@
 </head>
 
 <body>
+<<<<<<< HEAD
   <!-- <script>
     var socket = io();
     console.log("creating room")
@@ -27,21 +28,19 @@
     });
     document.getElementById("gameid-input").value = gameid;
   </script> -->
+=======
+  <script>
+        var gameid = Math.floor(Math.random() * 100000);
+        console.log(gameid)
+        var socket = io();
+        socket.emit("create game", { gameid: gameid });
+        socket.on("game created", function (data) {
+          console.log("game created")
+          console.log(data)
+        });
+  </script>
+>>>>>>> tmp
   <h1> {{ title }} </h1>
-  <!-- <form method="POST">
-      <div class="columns">
-      <div class="column">
-        <input name="questionTitle" type="text" id="tags" class="input is-half" placeholder="Search for questions">
-      </div>
-        <input type="submit" value="Submit" class="button"> 
-      <div class="column">
-        <button type="submit" formaction="/select_question" class="button is-one-quarter" id="selectQuestion"> Select Question </button>
-      </div>
-      <div class="column">
-        <button type="submit" formaction="/start_game" class="button is-one-quarter" id="startGame"> Start Game </button>
-      </div>
-      </div>
-    </form> -->
 
   <div class="columns">
     <div class="column">
@@ -69,6 +68,7 @@
   } ); 
   </script>
 
+<<<<<<< HEAD
   <!-- <script>
     socket.on("connect_error", (err) => {
       console.log(`connect_error due to ${err.message}`);
@@ -79,26 +79,38 @@
       console.log("emitting selected question")
       let tagsElement = document.getElementById("tags");
       socket.to(gameid).emit("select question", { tags: tagsElement.value, gameid: gameid });
+=======
+  <script>
+    // var socket = io();
+    document.getElementById("selectQuestion").onclick = function () {
+      console.log("emitting selected question")
+      let tagsElement = document.getElementById("tags");
+      socket.emit("select question", { title: tagsElement.value , "gameid": gameid});
+>>>>>>> tmp
     };
   </script> -->
 
+<<<<<<< HEAD
   <!-- <script>
     var socket = io();
+=======
+  <script>
+    // var socket = io();
+>>>>>>> tmp
     document.getElementById("removeQuestion").onclick = function () {
       socket.to(gameid).emit("remove question", { questionTitle: document.getElementById("removeQuestionTitle").value });
     };
+<<<<<<< HEAD
   </script> -->
   <!-- <script>
       document.getElementById("startGame").onclick = function () {
         socket.emit("start game");
       };
     </script> -->
+=======
+  </script>
+>>>>>>> tmp
 
-  <!-- <div class="content">
-      <p>Title: {{ title }}</p>
-      <p>Description: {{ description }}</p>
-      <p>Difficulty: {{ difficulty }}</p>
-    </div> -->
   <div class="columns">
     <div class="column">
       <table class="table" id="addTable">
@@ -117,8 +129,6 @@
             <td>{{ question.difficulty }}</td>
             <td>{{ question.description }}</td>
             <td>
-              <!-- <input type="hidden" name="questionTitle" value="{{ question.title }}">
-              <input type="hidden" name="questionDifficulty" value="{{ question.difficulty }}"> -->
               <button type="button" id="selectQuestionTable" class="button is-one-quarter selectQuestionTable"
                 titleData="{{ question.title}}"> Add </button>
             </td>
@@ -127,12 +137,18 @@
         </tbody>
       </table>
     </div>
+<<<<<<< HEAD
     <!-- <script>
       var socketio = io();
+=======
+    <script>
+      // var socketio = io();
+>>>>>>> tmp
       var buttons = document.getElementsByClassName("selectQuestionTable");
       for (var i = 0; i < buttons.length; i++) {
         buttons[i].onclick = function () {
           console.log("emitting question" + i + this.getAttribute("titleData"))
+<<<<<<< HEAD
           socketio.emit("select question", { title: this.getAttribute("titleData") , gameid: gameid});
         };
       }
@@ -149,6 +165,13 @@
         };
       }
     </script> -->
+=======
+          socket.emit("select question", { title: this.getAttribute("titleData") ,"gameid": gameid});
+        };
+      }
+    </script>
+
+>>>>>>> tmp
     <div class="column">
       <table class="table" id="removeTable">
         <thread>
@@ -158,25 +181,18 @@
           </tr>
         </thread>
         <tbody>
-          <!-- {% for question in selectedQuestions %}
-      <tr>
-        <td id="removeQuestionTitle">{{ question.title }}</td>
-        <td>{{ question.difficulty }}</td>
-        <td>{{ question.description }}</td>
-        <td>
-          <input type="hidden" name="questionTitle" value="{{ question.title }}">
-              <input type="hidden" name="questionDifficulty" value="{{ question.difficulty }}"> 
-          <button type="button" id="removeQuestionTable" class="button is-one-quarter removeQuestionTable"> Remove
-          </button>
-        </td>
-      </tr>
-      {% endfor %} -->
+         
       </table>
     </div>
   </div>
 
+<<<<<<< HEAD
   <!-- <script>
     socketio.on("question removed", function (data) {
+=======
+  <script>
+    socket.on("question removed", function (data) {
+>>>>>>> tmp
       console.log("running question removed function");
       removeFromRemoval(data["title"]);
       showNotification(data["title"], "removed");
@@ -222,6 +238,7 @@
       notification.appendChild(deleteButton);
       document.body.appendChild(notification);
     }
+<<<<<<< HEAD
   </script> -->
   <!-- from the bulma documentation: -->
   <script>
@@ -236,6 +253,10 @@
     // });
   </script>
   <!-- <script>
+=======
+  </script>
+  <script>
+>>>>>>> tmp
     function addQuestionToRemoval(data) {
       var table = document.getElementById("removeTable");
       var row = document.createElement("tr");
@@ -247,7 +268,7 @@
       removeButton.className = "button is-one-quarter removeQuestionTable";
       removeButton.textContent = "Remove";
       removeButton.onclick = function () {
-        socketio.emit("remove question", { title: data["title"] });
+        socket.emit("remove question", { title: data["title"] });
         console.log("emitting question for removal" + data["title"])
       };
       remove.appendChild(removeButton);
@@ -255,9 +276,15 @@
       row.appendChild(remove);
       table.appendChild(row);
     }
+<<<<<<< HEAD
   </script> -->
   <!-- <script>
     socketio.on("question selected", function (data) {
+=======
+  </script>
+  <script>
+    socket.on("question selected", function (data) {
+>>>>>>> tmp
       console.log(data);
       showNotification(data.title, "selected");
       addQuestionToRemoval(data);
