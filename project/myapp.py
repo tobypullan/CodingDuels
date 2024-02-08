@@ -7,7 +7,6 @@ from flask_socketio import SocketIO
 # init SQLAlchemy so we can use it later in our models
 db = SQLAlchemy()
 socketio = SocketIO()
-
 def create_app(*args, **kwargs):
     print(args)
     print(kwargs)
@@ -17,7 +16,8 @@ def create_app(*args, **kwargs):
     # this is the external connection url, not the internal one
     engine = create_engine('postgresql://toby:GpYiCx5LQPoClKZI5TmIAXGIwIMyKDku@dpg-cl7mp02vokcc73anqkf0-a.frankfurt-postgres.render.com/codingduelsdb')
 
-    app.config['SECRET_KEY'] = 'toby1234'
+    app.config['SECRET_KEY'] = '192b9bdd22ab9ed4d12e236c78afcb9a393ec15f71bbf5dc987d54727823bcbf'
+
     #app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///db.sqlite'
     app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://toby:GpYiCx5LQPoClKZI5TmIAXGIwIMyKDku@dpg-cl7mp02vokcc73anqkf0-a.frankfurt-postgres.render.com/codingduelsdb'
 

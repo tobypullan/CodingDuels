@@ -1,19 +1,21 @@
-from flask import Blueprint, render_template, request, redirect, jsonify
+from flask import Blueprint, render_template, request, redirect, jsonify, session, current_app as app
 from flask_login import login_required, current_user
 from .myapp import db
 from .models import Questions, Games, game_players
 #from sqlalchemy import update, func
 from random import randint
 import requests
-from flask_socketio import SocketIO
+from flask_socketio import SocketIO, join_room
 from .myapp import socketio
 
 
 main = Blueprint('main', __name__)
+rooms = {}
 
 @main.route('/')
 def index():
     print("attempting to render index.html")
+    print(app.secret_key)
     return render_template('index.html')
 
 @main.route('/profile')
@@ -25,19 +27,36 @@ def profile():
 @login_required
 def create():
     questionData = Questions.query.all()
-    global gameid
-    gameid = randint(0, 1000000000)
     return render_template('create.html', questionData=questionData)
 
+@socketio.on("create game")
+def handle_create_game(data):
+    gameid = data["gameid"]
+    session["gameid"] = gameid
+    print(f"session: {session}")
+    join_room(gameid)
+    rooms[gameid] = request.sid
+    print(rooms)
+    socketio.emit("game created", {"success": True})
+
+@socketio.on("join game")
+def handle_join_game(data):
+    gameid = data["gameid"]
+    join_room(gameid)
+    socketio.emit("game joined", {"success": True})
+    print("player joined room")
+
+
 @socketio.on("select question")
-def handle_select_question(questionTitle):
-    print(questionTitle)
-    print(type(questionTitle))
-    questionid = Questions.query.filter_by(title=questionTitle["title"]).first()
-    newGameQuestion = Games(gameid=gameid, gamequestions=questionid.questionid, personid=current_user.personid)
+def handle_select_question(data):
+    print(data)
+    print(type(data))
+    print(f"socket id: {request.sid}")
+    questionid = Questions.query.filter_by(title=data["title"]).first()
+    newGameQuestion = Games(gameid=data["gameid"], gamequestions=questionid.questionid, personid=current_user.personid)
     db.session.add(newGameQuestion)
     db.session.commit()
-    socketio.emit("question selected", {"title": questionid.title, "description": questionid.description, "difficulty": questionid.difficulty})
+    socketio.emit("question selected", {"title": questionid.title, "description": questionid.description, "difficulty": questionid.difficulty}, room=data["gameid"])
 
 @socketio.on("remove question")
 def handle_remove_question(questionTitle):
@@ -85,16 +104,17 @@ def handle_remove_question(questionTitle):
 @main.route('/start_game', methods=['POST'])
 @login_required
 def start_game():
-    return redirect('/game/' + str(gameid))
+    print(session)
+    return redirect('/game/' + str(session["gameid"]))
 
 @main.route('/game/<gameid>')
 @login_required
-def game(gameid):
-    questions = Games.query.filter_by(gameid=gameid).all()
+def game():
+    questions = Games.query.filter_by(gameid=session["gameid"]).all()
     questionTitles = []
     for question in questions:
         questionTitles.append(Questions.query.filter_by(questionid=question.gamequestions).first().title)
-    return render_template('game.html', questions=questionTitles, gameid=gameid)
+    return render_template('game.html', questions=questionTitles, gameid=session["gameid"])
 
 # @socketio.on("new player")
 # def handle_start_game(player):
