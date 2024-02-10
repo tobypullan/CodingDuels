@@ -13,13 +13,15 @@
 
 <body>
   <script>
-        var gameid = Math.floor(Math.random() * 100000);
-        console.log(gameid)
+        // var gameid = Math.floor(Math.random() * 100000);
+        // console.log(gameid)
         var socket = io();
-        socket.emit("create game", { gameid: gameid });
+        var gameid;
+        socket.emit("create game");
         socket.on("game created", function (data) {
           console.log("game created")
           console.log(data)
+          gameid = data["gameid"];
         });
   </script>
   <h1> {{ title }} </h1>
@@ -55,6 +57,7 @@
     document.getElementById("selectQuestion").onclick = function () {
       console.log("emitting selected question")
       let tagsElement = document.getElementById("tags");
+      console.log("gameid: " + gameid)
       socket.emit("select question", { title: tagsElement.value , "gameid": gameid});
     };
   </script>
@@ -62,7 +65,7 @@
   <script>
     // var socket = io();
     document.getElementById("removeQuestion").onclick = function () {
-      socket.to(gameid).emit("remove question", { questionTitle: document.getElementById("removeQuestionTitle").value });
+      socket.emit("remove question", { questionTitle: document.getElementById("removeQuestionTitle").value });
     };
   </script>
 
@@ -98,6 +101,7 @@
       for (var i = 0; i < buttons.length; i++) {
         buttons[i].onclick = function () {
           console.log("emitting question" + i + this.getAttribute("titleData"))
+          console.log("gameid: " + gameid)
           socket.emit("select question", { title: this.getAttribute("titleData") ,"gameid": gameid});
         };
       }
