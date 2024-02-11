@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request, redirect, jsonify, session, current_app as app
+from flask import Blueprint, render_template, request, redirect, jsonify, current_app as app
 from flask_login import login_required, current_user
 from .myapp import db
 from .models import Questions, Games, game_players
@@ -54,7 +54,7 @@ def handle_join_game(data):
 
 @socketio.on("select question")
 def handle_select_question(data):
-    print(f"session in select question: {session}")
+    #print(f"session in select question: {session}")
     print(rooms)
     questionid = Questions.query.filter_by(title=data["title"]).first()
     newGameQuestion = Games(gameid=data["gameid"], gamequestions=questionid.questionid, personid=current_user.personid)
@@ -109,9 +109,9 @@ def handle_remove_question(questionTitle):
 @login_required
 def start_game():
     gameid = request.form.get('gameid')
-    print("Before redirect:", session)
+    #print("Before redirect:", session)
     redirect_url = '/game/' + str(gameid)
-    print("After redirect:", session)
+    #print("After redirect:", session)
     return redirect(redirect_url)
 
 @main.route('/game/<gameid>')
