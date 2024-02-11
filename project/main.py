@@ -14,31 +14,35 @@ rooms = {}
 
 @main.route('/')
 def index():
-    print("attempting to render index.html")
-    print(app.secret_key)
     return render_template('index.html')
 
 @main.route('/profile')
 @login_required
 def profile():
-    print(f"profile session {session}")
     return render_template('profile.html', name=current_user.name)
 
 @main.route('/create')
 @login_required
 def create():
-    session["gameid"] = randint(0, 1000000000)
+    # gameid = randint(0, 1000000000)
+    # session["gameid"] = gameid
+    # db.session.add(gameids(gameid=gameid))
+    # db.session.commit()
     questionData = Questions.query.all()
     return render_template('create.html', questionData=questionData)
 
+# @socketio.on("myGameid")
+# def handle_myGameid(data):
+
+
 @socketio.on("create game")
 def handle_create_game():
-    gameid = session["gameid"]
-    print(f"session: {session}")
+    gameid = randint(0, 1000000000)
     join_room(gameid)
-    rooms[gameid] = request.sid
+    rooms[request.sid] = gameid
+    #db.session.query(gameids).filter(gameids.gameid == gameid).update({'socketid': request.sid})
     print(rooms)
-    socketio.emit("game created", {"gameid": gameid})
+    socketio.emit("game created", {"gameid": rooms[request.sid]})
 
 @socketio.on("join game")
 def handle_join_game(data):
@@ -50,10 +54,8 @@ def handle_join_game(data):
 
 @socketio.on("select question")
 def handle_select_question(data):
-    print(data)
-    print(type(data))
-    print(f"socket id: {request.sid}")
     print(f"session in select question: {session}")
+    print(rooms)
     questionid = Questions.query.filter_by(title=data["title"]).first()
     newGameQuestion = Games(gameid=data["gameid"], gamequestions=questionid.questionid, personid=current_user.personid)
     db.session.add(newGameQuestion)
@@ -106,19 +108,20 @@ def handle_remove_question(questionTitle):
 @main.route('/start_game', methods=['POST'])
 @login_required
 def start_game():
+    gameid = request.form.get('gameid')
     print("Before redirect:", session)
-    redirect_url = '/game/' + str(session["gameid"])
+    redirect_url = '/game/' + str(gameid)
     print("After redirect:", session)
     return redirect(redirect_url)
 
 @main.route('/game/<gameid>')
 @login_required
 def game(gameid):
-    questions = Games.query.filter_by(gameid=session["gameid"]).all()
+    questions = Games.query.filter_by(gameid=gameid).all()
     questionTitles = []
     for question in questions:
         questionTitles.append(Questions.query.filter_by(questionid=question.gamequestions).first().title)
-    return render_template('game.html', questions=questionTitles, gameid=session["gameid"])
+    return render_template('game.html', questions=questionTitles, gameid=gameid)
 
 # @socketio.on("new player")
 # def handle_start_game(player):

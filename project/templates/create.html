@@ -23,6 +23,7 @@
           console.log(data)
           gameid = data["gameid"];
         });
+        document.getElementById('gameid-input').value = gameid;
   </script>
   <h1> {{ title }} </h1>
 
@@ -36,7 +37,10 @@
     <form method="POST">
       <div class="column">
         <input type="hidden" name="gameid" id="gameid-input">
-        <button type="submit" formaction="/start_game" class="button is-narrow"> Start Game </button>
+        <form method="POST" action="/start_game">
+          <input type="hidden" name="gameid" id="gameid-input"> <!-- Replace with your actual game id -->
+          <button type="submit" class="button is-narrow">Start Game</button>
+      </form>
       </div>
   </div>
   <script>
@@ -65,7 +69,7 @@
   <script>
     // var socket = io();
     document.getElementById("removeQuestion").onclick = function () {
-      socket.emit("remove question", { questionTitle: document.getElementById("removeQuestionTitle").value });
+      socket.emit("remove question", { questionTitle: document.getElementById("removeQuestionTitle").value, "gameid": gameid });
     };
   </script>
 

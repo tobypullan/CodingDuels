@@ -34,3 +34,8 @@ class game_players(db.Model):
     questionsanswered = db.Column(db.Integer)
     def get_id(self):
            return (self.gameid)
+# class gameids(db.Model):
+#     gameid = db.Column(db.Integer, primary_key=True) # primary keys are required by SQLAlchemy
+#     socketid = db.Column(db.String(1000))
+#     def get_id(self):
+#            return (self.gameid)
