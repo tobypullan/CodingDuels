@@ -205,13 +205,13 @@ def competition(gameid):
 @main.route('/game/<gameid>/competition/<playerid>', methods=['GET'])
 def compeition_player(gameid, playerid):
     questions = Games.query.filter_by(gameid=gameid).all()
-    questionTitles = []
-    questionDescriptions = []
+    data = []
     for question in questions:
-        questionTitles.append(Questions.query.filter_by(questionid=question.gamequestions).first().title)
-        questionDescriptions.append(Questions.query.filter_by(questionid=question.gamequestions).first().description)
-    qusetionsAndDescriptions = zip(questionTitles, questionDescriptions)
-    return render_template('competition.html', questionsAndDescriptions=qusetionsAndDescriptions, gameid=gameid, playerid=playerid)
+        title = (Questions.query.filter_by(questionid=question.gamequestions).first().title)
+        description = (Questions.query.filter_by(questionid=question.gamequestions).first().description)
+        questionId = str(Questions.query.filter_by(questionid=question.gamequestions).first().questionid)
+        data.append({"title": title, "description": description, "questionId": questionId})
+    return render_template('competition.html', data=data, gameid=gameid, playerid=playerid)
 
 @socketio.on("leaderboard connect")
 def handle_leaderboard_connect(data):

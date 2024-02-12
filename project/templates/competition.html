@@ -3,17 +3,19 @@
 <div class="content">
 <div id="timer"></div>
 <form method="POST" id="answersForm">
-{% for question, description in questionsAndDescriptions %}
+{% for question in data %}
 Question:
-{{ question }}
+{{ question["title"] }}
 <br>
 Description:
-{{ description }}
+{{ question["description"] }}
 <br>
-ANSWER:
-    <input name="{{ question }}" type="text" id="{{ question }}" class="input" placeholder="{{ question }}">
-    <button type="button" onclick="submitTextbox('{{ question }}')" class="button"> Submit </button>
-    <div id="{{ question }}-result"></div>
+<a href="{{ url_for('static', filename=question['questionId']  + '.txt') }}" download class="button is-link is-light is-small">Download Input</a>
+<p>ANSWER:</p>
+    <input name="{{ question['title'] }}" type="text" id="{{ question['title'] }}" class="input" placeholder="{{ question['title'] }}">
+    <button type="button" onclick="submitTextbox('{{ question['title'] }}')" class="button"> Submit </button>
+    <div id="{{ question['title'] }}-result"></div>
+    
 <br>
 <br>
 {% endfor %}
