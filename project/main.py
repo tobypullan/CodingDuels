@@ -12,6 +12,8 @@ from .myapp import socketio
 main = Blueprint('main', __name__)
 rooms = {}
 waitingrooms = {}
+leaderboardrooms = {}
+
 
 @main.route('/')
 def index():
@@ -211,6 +213,11 @@ def compeition_player(gameid, playerid):
     qusetionsAndDescriptions = zip(questionTitles, questionDescriptions)
     return render_template('competition.html', questionsAndDescriptions=qusetionsAndDescriptions, gameid=gameid, playerid=playerid)
 
+@socketio.on("leaderboard connect")
+def handle_leaderboard_connect(data):
+    gameid = int(data["gameid"])
+    leaderboardrooms[gameid] = request.sid
+
 @main.route('/game/<gameid>/competition/<playerid>', methods=['POST'])
 def compeition_player_post(gameid, playerid):
     data = request.get_json()
@@ -222,7 +229,12 @@ def compeition_player_post(gameid, playerid):
         db.session.query(game_players).filter(game_players.playerid == playerid).update({'questionsanswered': game_players.questionsanswered + 1})
         print(f"{questionName}+correct")
         playerName = game_players.query.filter_by(playerid=playerid).first().playername
-        socketio.emit('question answered', {'question': questionName, 'player': playerName})
+
+        #NEED TO EMIT THIS TO THE CORRECT SOCKET ONLY
+
+        socketio.emit('question answered', {'question': questionName, 'player': playerName}, to=leaderboardrooms[int(gameid)])
+        
+        
         db.session.commit()
         return f"{questionName}+correct"
     else:
