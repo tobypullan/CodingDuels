@@ -47,8 +47,10 @@ The game id: {{ gameid }} -->
 </form> -->
 <!-- <div class="content" id="players"></div> -->
 <script>
-    var socketio = io();
-    socketio.on("player joined", function(playerName){
+    var socket = io();
+    socket.emit('connect waiting room', {"gameid": "{{ gameid }}"});
+    socket.on("player joined", function(playerName){
+        console.log("socket id: " + socket.id);
         var playersTable = document.getElementById("players");
         var row = document.createElement("tr");
         var player = document.createElement("td");

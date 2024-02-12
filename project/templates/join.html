@@ -18,3 +18,24 @@ Enter your name:
 
 
 {% endblock %}
+
+<!-- <html>
+
+<head>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+</head>
+
+<body>
+    <input name="playername" type="text" id="tags" class="input">
+    <button type="button" class="button is-narrow" id="sendPlayerName"> Submit </button>
+    <script>
+        var socket = io();
+        document.getElementById("sendPlayerName").onclick = function () {
+            console.log("emitting player name")
+            let tagsElement = document.getElementById("tags")
+            socket.emit("player join", { "playerName": tagsElement.value, 'gameid':"{{ gameid }}"});
+        };
+    </script>
+</body>
+
+</html> -->

@@ -13,17 +13,19 @@
 
 <body>
   <script>
-        // var gameid = Math.floor(Math.random() * 100000);
-        // console.log(gameid)
-        var socket = io();
-        var gameid;
-        socket.emit("create game");
-        socket.on("game created", function (data) {
-          console.log("game created")
-          console.log(data)
-          gameid = data["gameid"];
-        });
-        document.getElementById('gameid-input').value = gameid;
+    // var gameid = Math.floor(Math.random() * 100000);
+    // console.log(gameid)
+    var socket = io();
+    var gameid;
+    socket.emit("create game");
+    socket.on("game created", function (data) {
+      console.log("game created")
+      console.log(data)
+      gameid = data["gameid"];
+      document.getElementById('gameid-input').value = gameid;
+      console.log("gameid after setting gameid element: " + gameid)
+    });
+    
   </script>
   <h1> {{ title }} </h1>
 
@@ -34,14 +36,12 @@
     <div class="column">
       <button type="button" class="button is-narrow" id="selectQuestion"> Select Question </button>
     </div>
-    <form method="POST">
-      <div class="column">
+    <div class="column">
+      <form method="POST" action="/start_game">
         <input type="hidden" name="gameid" id="gameid-input">
-        <form method="POST" action="/start_game">
-          <input type="hidden" name="gameid" id="gameid-input"> <!-- Replace with your actual game id -->
-          <button type="submit" class="button is-narrow">Start Game</button>
+        <button type="submit" class="button is-narrow">Start Game</button>
       </form>
-      </div>
+    </div>
   </div>
   <script>
     $(function () {
@@ -62,7 +62,7 @@
       console.log("emitting selected question")
       let tagsElement = document.getElementById("tags");
       console.log("gameid: " + gameid)
-      socket.emit("select question", { title: tagsElement.value , "gameid": gameid});
+      socket.emit("select question", { title: tagsElement.value, "gameid": gameid });
     };
   </script>
 
@@ -106,7 +106,7 @@
         buttons[i].onclick = function () {
           console.log("emitting question" + i + this.getAttribute("titleData"))
           console.log("gameid: " + gameid)
-          socket.emit("select question", { title: this.getAttribute("titleData") ,"gameid": gameid});
+          socket.emit("select question", { title: this.getAttribute("titleData"), "gameid": gameid });
         };
       }
     </script>
@@ -120,7 +120,7 @@
           </tr>
         </thread>
         <tbody>
-         
+
       </table>
     </div>
   </div>
@@ -200,7 +200,7 @@
       showNotification(data.title, "selected");
       addQuestionToRemoval(data);
     });
-  </script> 
+  </script>
   <script>
     function removeFromRemoval(title) {
       console.log("running remove from removal function")
@@ -218,6 +218,6 @@
         }
       }
     }
-  </script> 
+  </script>
 </body>
 {% endblock %}

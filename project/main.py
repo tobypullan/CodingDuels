@@ -11,6 +11,7 @@ from .myapp import socketio
 
 main = Blueprint('main', __name__)
 rooms = {}
+waitingrooms = {}
 
 @main.route('/')
 def index():
@@ -39,16 +40,16 @@ def create():
 def handle_create_game():
     gameid = randint(0, 1000000000)
     join_room(gameid)
-    rooms[request.sid] = gameid
+    rooms[gameid] = request.sid
     #db.session.query(gameids).filter(gameids.gameid == gameid).update({'socketid': request.sid})
     print(rooms)
-    socketio.emit("game created", {"gameid": rooms[request.sid]})
+    socketio.emit("game created", {"gameid": gameid}, to=request.sid)
 
 @socketio.on("join game")
 def handle_join_game(data):
     gameid = data["gameid"]
     join_room(gameid)
-    socketio.emit("game joined", {"success": True})
+    socketio.emit("game joined", {"success": True}, to=request.sid)
     print("player joined room")
 
 
@@ -109,6 +110,7 @@ def handle_remove_question(questionTitle):
 @login_required
 def start_game():
     gameid = request.form.get('gameid')
+    print(f"start game gameid: {gameid}")
     #print("Before redirect:", session)
     redirect_url = '/game/' + str(gameid)
     #print("After redirect:", session)
@@ -146,6 +148,22 @@ def game(gameid):
 def join_game(gameid):
     return render_template('join.html', gameid=gameid)
 
+
+# @socketio.on('player join')
+# def handle_player_join(data):
+#     name = data['playerName']
+#     gameid = int(data['gameid'])
+#     newPlayer = game_players(gameid=gameid, playername=name, questionsanswered=0)
+#     db.session.add(newPlayer)
+#     db.session.commit()
+#     print("player name: " + name)
+#     return redirect('/game/' + str(gameid) + '/waiting_room/' + str(newPlayer.playerid))
+
+@socketio.on("connect waiting room")
+def handle_connect_waiting_room(data):
+    gameid = int(data["gameid"])
+    waitingrooms[gameid] = request.sid
+
 @main.route('/game/<gameid>/join', methods=['POST'])
 def join_game_post(gameid):
     name = request.form.get('playername')
@@ -153,7 +171,13 @@ def join_game_post(gameid):
     db.session.add(newPlayer)
     db.session.commit()
     print("player name: " + name)
-    socketio.emit("player joined", name)
+
+
+    # THE PROBLEM IS HERE
+    # THE PLAYER JOINED SOCKET IS SENT TO ALL INSTANCES OF GAME.HTML
+    # NEEDS TO BE ONLY SENT TO THE ONE WITH THAT SPECIFIC GAMEID
+
+    socketio.emit("player joined", name, to=waitingrooms[int(gameid)])
     return redirect('/game/' + str(gameid) + '/waiting_room/' + str(newPlayer.playerid))
 
 @main.route('/game/<gameid>/waiting_room/<playerid>')
