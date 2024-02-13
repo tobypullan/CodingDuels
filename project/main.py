@@ -279,8 +279,15 @@ def endGameLeaderboard(gameid):
     print(playerScores)
     return render_template('playerLeaderboard.html', gameid=gameid, playerNames=playerNames, playerScores=playerScores)
 
+@main.route("/joingame")
+def joinGame():
+    return render_template('joinGame.html')
 
-
+@main.route("/joingame", methods=['POST'])
+def joinGamePost():
+    gameid = request.form.get('gameid')
+    print(gameid)
+    return redirect('/game/' + str(gameid) + '/join')
 # @main.route('/game/<gameid>/competition/leaderboard', methods=['POST'])
 # @login_required
 # def leaderboard_post():
