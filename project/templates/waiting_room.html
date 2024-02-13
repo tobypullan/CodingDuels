@@ -1,10 +1,26 @@
 {% extends "base.html" %}
-
 {% block content %}
-THIS IS THE WAITING ROOM
-PRESS BUTTON WHEN HOST STARTS GAME
-<form method="POST">
-    <button type="submit" class="button"> ENTER GAME </button>
-</form>
-{{ waitWarning }}
-{% endblock %}
+
+<head>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css">
+</head>
+<body>
+    <script>
+        var socket = io();
+        console.log("testing waiting room log")
+        socket.emit("connect waiting room players", {"gameid": "{{ gameid }}", "playerid": "{{ playerid }}"});
+        socket.on("player joined waiting room", function(data){
+            console.log(data);
+        });
+        socket.on("game started", function(data){
+            console.log("redirecting to game page")
+            window.location.href = '/game/' + data["gameid"].toString() + '/competition/' + data["playerid"].toString();
+        });
+    </script>
+    <h1>The waiting room</h1>
+    <h3>Waiting for host to start game</h3>
+
+    {% endblock %}
+</body>

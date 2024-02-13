@@ -13,7 +13,7 @@ main = Blueprint('main', __name__)
 rooms = {}
 waitingrooms = {}
 leaderboardrooms = {}
-
+waitingRoomPlayers = {}
 
 @main.route('/')
 def index():
@@ -186,20 +186,33 @@ def join_game_post(gameid):
 def waiting_room(gameid, playerid):
     return render_template('waiting_room.html', gameid=gameid, playerid=playerid)
 
-@main.route('/game/<gameid>/waiting_room/<playerid>', methods=['POST'])
-def waiting_room_post(gameid, playerid):
-    try:
-        if gameStarted == True:
-            return redirect('/game/' + str(gameid) + '/competition/' + str(playerid))
-        else:
-            return render_template('waiting_room.html', gameid=gameid, playerid=playerid, waitWarning="Please wait for the host to start the game")
-    except:
-        return render_template('waiting_room.html', gameid=gameid, playerid=playerid, waitWarning="Please wait for the host to start the game")
+@socketio.on("connect waiting room players")
+def handle_connect_waiting_room_players(data):
+    gameid = int(data["gameid"])
+    playerid = int(data["playerid"])
+    waitingRoomPlayers[playerid] = request.sid
+    print(f"waiting room players: {waitingRoomPlayers}")
+    socketio.emit("player joined waiting room", to=request.sid)
+# @main.route('/game/<gameid>/waiting_room/<playerid>', methods=['POST'])
+# def waiting_room_post(gameid, playerid):
+#     try:
+#         if gameStarted == True:
+#             return redirect('/game/' + str(gameid) + '/competition/' + str(playerid))
+#         else:
+#             return render_template('waiting_room.html', gameid=gameid, playerid=playerid, waitWarning="Please wait for the host to start the game")
+#     except:
+#         return render_template('waiting_room.html', gameid=gameid, playerid=playerid, waitWarning="Please wait for the host to start the game")
 
 @main.route('/game/<gameid>/compeition', methods=['POST'])
 def competition(gameid):
-    global gameStarted
-    gameStarted = True
+    # global gameStarted
+    # gameStarted = True
+    print("testing game start post request")
+    print(f"waiting room players: {waitingRoomPlayers}")
+    for player in waitingRoomPlayers:
+        print(f"player: {player}")
+        print(f"sid: {waitingRoomPlayers[player]}")
+        socketio.emit("game started", data={"gameid": gameid, "playerid":player}, to=waitingRoomPlayers[player])
     return redirect('/game/' + str(gameid) + '/competition/leaderboard')
 
 @main.route('/game/<gameid>/competition/<playerid>', methods=['GET'])
