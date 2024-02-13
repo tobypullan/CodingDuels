@@ -7,6 +7,7 @@ from random import randint
 import requests
 from flask_socketio import SocketIO, join_room
 from .myapp import socketio
+from .writeFiles import writeFiles
 
 
 main = Blueprint('main', __name__)
@@ -288,6 +289,15 @@ def joinGamePost():
     gameid = request.form.get('gameid')
     print(gameid)
     return redirect('/game/' + str(gameid) + '/join')
+
+
+@socketio.on("change input")
+def handle_new_question(data):
+    questionid = data["questionid"]
+    questionFileMatch = {"1": "Q1", "2":"Q2", "3":"Q3", "4":"Q4", "5":"Q5", "6":"Q6", "7":"Q7", "8":"Q8", "9":"Q9", "10":"Q10"}
+    change = writeFiles(questionid)
+    change.questionFileMatch[questionid]()
+
 # @main.route('/game/<gameid>/competition/leaderboard', methods=['POST'])
 # @login_required
 # def leaderboard_post():

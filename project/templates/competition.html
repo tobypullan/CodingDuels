@@ -18,6 +18,10 @@ Description:
     
 <br>
 <br>
+<script>
+    var socket = io();
+    socket.emit("change input", { "questionId": "{{ question['questionId'] }}" });
+</script>
 {% endfor %}
 </form>
 <button class="button" id="endButton" type="button" style="display: none" onclick="seeLeaderboard()"> See Leaderboard </button>

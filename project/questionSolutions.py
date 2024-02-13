@@ -15,6 +15,7 @@ def FibSeqGen(n):
   
 questionSolutionFuncs = {4: SumOfList}
 
+
 class Solutions:
     def __init__(self, playerid):
         self.playerid = playerid
