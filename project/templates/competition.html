@@ -6,6 +6,9 @@
 </head>
 
 <body>
+    <script>
+        var socket = io();
+    </script>
     <div class="content">
         <div id="timer"></div>
         <form method="POST" id="answersForm">
@@ -16,25 +19,35 @@
             Description:
             {{ question["description"] }}
             <br>
-            <a href="{{ url_for('static', filename=question['questionId']  + '.txt') }}" download
+            <a href="{{ url_for('static', filename=playerid + question['questionId']  + '.txt') }}" download
                 class="button is-link is-light is-small">Download Input</a>
             <p>ANSWER:</p>
-            <input name="{{ question['title'] }}" type="text" id="{{ question['title'] }}" class="input"
+            <input name="{{ question['title'] }}" type="text" id="{{ question['questionId'] }}" class="input"
                 placeholder="{{ question['title'] }}">
-            <button type="button" onclick="submitTextbox('{{ question['title'] }}')" class="button"> Submit </button>
-            <div id="{{ question['title'] }}-result"></div>
+            <button type="button" onclick="submitTextbox('{{ question['questionId'] }}')" class="button"> Submit </button>
+            <div id="{{ question['questionId'] }}-result"></div>
 
             <br>
             <br>
             <script>
-                var socket = io();
-                socket.emit("change input", { "questionId": "{{ question['questionId'] }}" });
+                socket.emit("change input", { "questionId": "{{ question['questionId'] }}", "playerId": "{{ playerid }}" });
             </script>
             {% endfor %}
         </form>
         <button class="button" id="endButton" type="button" style="display: none" onclick="seeLeaderboard()"> See
             Leaderboard </button>
         <script>
+
+            questionAnswers = {};
+            socket.on("question answer", function (data){
+                var questionId = data["questionId"];
+                var answer = data["answer"];
+                console.log(questionId);
+                console.log(answer);
+                questionAnswers[questionId] = answer;
+                console.log(questionAnswers);
+            });
+            console.log(questionAnswers);
             function lockAnswerBoxes(name) {
                 var answerboxes = document.querySelectorAll("input[type=text]");
                 answerboxes.forEach(function (answerbox) {
@@ -68,44 +81,49 @@
                 }
             }, 1000);
 
-            function submitTextbox(name) {
-                var content = document.getElementById(name).value;
+            // function submitTextbox(name) {
+            //     var content = document.getElementById(name).value;
 
-                var xhr = new XMLHttpRequest();
-                xhr.open("POST", "/game/{{ gameid }}/competition/{{ playerid }}", true);
-                xhr.setRequestHeader('Content-Type', 'application/json');
-                xhr.onreadystatechange = function () {
-                    if (xhr.readyState == XMLHttpRequest.DONE && xhr.status == 200) {
-                        var response = xhr.responseText.split("+");
-                        console.log(response);
-                        var question = response[0];
-                        var result = response[1];
-                        var resultDiv = document.getElementById(question + "-result");
-                        if (result == "correct") {
-                            resultDiv.innerHTML = "Correct!";
-                            var answerbox = document.getElementById(question);
-                            answerbox.disabled = true;
-                        } else {
-                            resultDiv.innerHTML = "Incorrect!";
-                        }
-                    }
-                };
-                var data = JSON.stringify({ "question": name, "answer": content });
-                xhr.send(data);
+            //     var xhr = new XMLHttpRequest();
+            //     xhr.open("POST", "/game/{{ gameid }}/competition/{{ playerid }}", true);
+            //     xhr.setRequestHeader('Content-Type', 'application/json');
+            //     xhr.onreadystatechange = function () {
+            //         if (xhr.readyState == XMLHttpRequest.DONE && xhr.status == 200) {
+            //             var response = xhr.responseText.split("+");
+            //             console.log(response);
+            //             var question = response[0];
+            //             var result = response[1];
+            //             var resultDiv = document.getElementById(question + "-result");
+            //             if (result == "correct") {
+            //                 resultDiv.innerHTML = "Correct!";
+            //                 var answerbox = document.getElementById(question);
+            //                 answerbox.disabled = true;
+            //             } else {
+            //                 resultDiv.innerHTML = "Incorrect!";
+            //             }
+            //         }
+            //     };
+            //     var data = JSON.stringify({ "question": name, "answer": content });
+            //     xhr.send(data);
+            // }
+
+            function submitTextbox(questionId) {
+                var content = document.getElementById(questionId).value;
+                if (content == questionAnswers[questionId]) {
+                    var resultDiv = document.getElementById(questionId + "-result");
+                    resultDiv.innerHTML = "Correct!";
+                    var answerbox = document.getElementById(questionId);
+                    answerbox.disabled = true;
+                } else {
+                    var resultDiv = document.getElementById(questionId + "-result");
+                    resultDiv.innerHTML = "Incorrect!";
+                }
+
             }
 
             function seeLeaderboard() {
                 window.location.href = "/game/{{ gameid }}/leaderboard/players";
             }
-        </script>
-        <script>
-            questionAnswers = {};
-            socket.on("question answer", function (data){
-                var questionId = data["questionId"];
-                var answer = data["answer"];
-                questionAnswers[questionId] = answer;
-                console.log(questionAnswers);
-            });
         </script>
 </body>
 {% endblock %}

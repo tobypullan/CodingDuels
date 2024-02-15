@@ -204,7 +204,7 @@ def handle_connect_waiting_room_players(data):
 #     except:
 #         return render_template('waiting_room.html', gameid=gameid, playerid=playerid, waitWarning="Please wait for the host to start the game")
 
-@main.route('/game/<gameid>/compeition', methods=['POST'])
+@main.route('/game/<gameid>/competition', methods=['POST'])
 def competition(gameid):
     # global gameStarted
     # gameStarted = True
@@ -217,7 +217,7 @@ def competition(gameid):
     return redirect('/game/' + str(gameid) + '/competition/leaderboard')
 
 @main.route('/game/<gameid>/competition/<playerid>', methods=['GET'])
-def compeition_player(gameid, playerid):
+def competition_player(gameid, playerid):
     questions = Games.query.filter_by(gameid=gameid).all()
     data = []
     for question in questions:
@@ -233,7 +233,7 @@ def handle_leaderboard_connect(data):
     leaderboardrooms[gameid] = request.sid
 
 @main.route('/game/<gameid>/competition/<playerid>', methods=['POST'])
-def compeition_player_post(gameid, playerid):
+def competition_player_post(gameid, playerid):
     data = request.get_json()
     questionName = data['question']
     questionAnswer = data['answer']
@@ -294,7 +294,8 @@ def joinGamePost():
 @socketio.on("change input")
 def handle_new_question(data):
     questionid = data["questionId"]
-    questionFileMatch = {"4": Q4(), "5": Q5(), "6": Q6(), "7": Q7(), "8": Q8(), "9": Q9(), "10": Q10()}
+    playerid = data["playerId"]
+    questionFileMatch = {"4": Q4(playerid), "5": Q5(playerid), "6": Q6(playerid), "7": Q7(playerid), "8": Q8(playerid), "9": Q9(playerid), "10": Q10(playerid)}
     answer = questionFileMatch[questionid]
     print("changed input")
     socketio.emit("question answer", {"questionId": questionid, "answer": answer}, to=request.sid)

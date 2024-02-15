@@ -5,13 +5,37 @@ def Q4Ans(n):
         return n[0] + Q4Ans(n[1:])
     
 def Q5Ans(n):
-    if n == 0:
-        return []
-    elif n == 1:
-        return [1]
-    else:
-        return Q5Ans(n-1) + [Q5Ans(n-1)[-1] + Q5Ans(n-1)[-2]]
+    terms = [1, 1]
+    #first n terms of fibonacci sequence
+    for i in range(2, n):
+        terms.append(terms[i-1] + terms[i-2])
+    return terms
 
+def checkPrime(n):
+    if n < 2:
+        return False
+    for i in range(2, n):
+        if n % i == 0:
+            return False
+    return True
+
+def Q6Ans(n):
+    return sum([x for x in n if checkPrime(x)])
+
+def Q7Ans(n):
+    return sum([int(x) for x in ''.join([str(x) for x in n])])
+
+def Q8Ans(n):
+    total = 0
+    for i in range(len(n)):
+        total += n[i][i]
+    return total
+
+def Q9Ans(n):
+    return 0
+
+def Q10Ans(n):
+    return 0
 
 
 
