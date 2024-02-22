@@ -1,7 +1,7 @@
-from flask import Blueprint, render_template, request, redirect, jsonify, current_app as app
+from flask import Blueprint, render_template, request, redirect, jsonify, current_app
 from flask_login import login_required, current_user
 from .myapp import db
-from .models import Questions, Games, game_players
+from .models import Questions, Games, game_players, Users
 #from sqlalchemy import update, func
 from random import randint
 import requests
@@ -15,6 +15,10 @@ rooms = {}
 waitingrooms = {}
 leaderboardrooms = {}
 waitingRoomPlayers = {}
+winners = {}
+timeincrease = {}
+questionOrder = {}
+
 
 @main.route('/')
 def index():
@@ -23,7 +27,9 @@ def index():
 @main.route('/profile')
 @login_required
 def profile():
-    return render_template('profile.html', name=current_user.name)
+    playtime = Users.query.filter_by(personid=current_user.personid).first().playtime
+    wins = Users.query.filter_by(personid=current_user.personid).first().wins
+    return render_template('profile.html', name=current_user.name, playtime=playtime, wins=wins)
 
 @main.route('/create')
 @login_required
@@ -42,6 +48,7 @@ def create():
 @socketio.on("create game")
 def handle_create_game():
     gameid = randint(0, 1000000000)
+    questionOrder[gameid] = {}
     join_room(gameid)
     rooms[gameid] = request.sid
     #db.session.query(gameids).filter(gameids.gameid == gameid).update({'socketid': request.sid})
@@ -113,6 +120,13 @@ def handle_remove_question(questionTitle):
 @login_required
 def start_game():
     gameid = request.form.get('gameid')
+    seconds = request.form.get('timer_seconds')
+    print(f"seconds: {seconds}")
+    minutes = request.form.get('timer_minutes')
+    print(f"minutes: {minutes}")
+    totaltime = int(seconds) + (int(minutes) * 60)
+    db.session.query(Games).filter(Games.gameid == gameid).update({'duration': totaltime})
+    db.session.commit()
     print(f"start game gameid: {gameid}")
     #print("Before redirect:", session)
     redirect_url = '/game/' + str(gameid)
@@ -220,12 +234,22 @@ def competition(gameid):
 def competition_player(gameid, playerid):
     questions = Games.query.filter_by(gameid=gameid).all()
     data = []
+    gameduration = Games.query.filter_by(gameid=gameid).first().duration
+    print(f"game duration: {gameduration}")
     for question in questions:
         title = (Questions.query.filter_by(questionid=question.gamequestions).first().title)
         description = (Questions.query.filter_by(questionid=question.gamequestions).first().description)
         questionId = str(Questions.query.filter_by(questionid=question.gamequestions).first().questionid)
         data.append({"title": title, "description": description, "questionId": questionId})
-    return render_template('competition.html', data=data, gameid=gameid, playerid=playerid)
+    return render_template('competition.html', data=data, gameid=gameid, playerid=playerid, duration=gameduration)
+
+@socketio.on("finished questions")
+def handle_finished_questions(data):
+    gameid = int(data["gameid"])
+    playerid = int(data["playerid"])
+    if gameid not in winners:
+        winners[gameid] = playerid
+        handle_increase_wins(data)
 
 @socketio.on("leaderboard connect")
 def handle_leaderboard_connect(data):
@@ -254,6 +278,29 @@ def competition_player_post(gameid, playerid):
     else:
         print("incorrect")
         return f"{questionName}+incorrect"
+    
+@socketio.on("correct answer")
+def handle_correct_answer(data):
+    questionName = data['question']
+    playerid = data['playerId']
+    gameid = int(data['gameId'])
+    questionid = data["questionid"]
+    if questionid not in questionOrder[gameid]:
+        questionOrder[gameid][questionid] = [playerid]
+    else:
+        questionOrder[gameid][questionid].append(playerid)
+    questions = Questions.query.filter_by(title = questionName).first()
+    db.session.query(game_players).filter(game_players.playerid == playerid).update({'questionsanswered': game_players.questionsanswered + 1})
+    db.session.commit()
+    print(f"player id index: {questionOrder[gameid][questionid].index(playerid)}")
+    print(f"floor div using index + 1: {1000 // (questionOrder[gameid][questionid].index(playerid) + 1)}")
+    questionScore = (1000 // (questionOrder[gameid][questionid].index(playerid) + 1))
+    print(f"question score: {questionScore}")
+    db.session.query(game_players).filter(game_players.playerid == playerid).update({'score': game_players.score + questionScore})
+    db.session.commit()
+    playerName = game_players.query.filter_by(playerid=playerid).first().playername
+    socketio.emit('question answered', {'question': questionName, 'player': playerName, 'score': questionScore}, to=leaderboardrooms[int(gameid)])
+    
 
 @main.route('/game/<gameid>/competition/leaderboard')
 @login_required
@@ -264,7 +311,7 @@ def leaderboard(gameid):
     playerScores = []
     for player in players:
         playerNames.append(player.playername)
-        playerScores.append(player.questionsanswered)
+        playerScores.append(player.score)
     return render_template('hostGamePage.html', gameid=gameid, playerNames=playerNames, playerScores=playerScores, numberOfQuestions=numberOfQuestions)
 
 @main.route("/game/<gameid>/leaderboard/players")
@@ -273,12 +320,16 @@ def endGameLeaderboard(gameid):
     players = game_players.query.filter_by(gameid=gameid).all()
     playerNames = []
     playerScores = []
+    results = {}
     for player in players:
         playerNames.append(player.playername)
         playerScores.append(player.questionsanswered)
+        results[player.playername] = player.score
+    sortedResults = sorted(results.items(), key=lambda x: x[1], reverse=True)
     print(playerNames)
     print(playerScores)
-    return render_template('playerLeaderboard.html', gameid=gameid, playerNames=playerNames, playerScores=playerScores)
+    print(sortedResults)
+    return render_template('playerLeaderboard.html', gameid=gameid, playerNames=playerNames, playerScores=playerScores, results=sortedResults)
 
 @main.route("/joingame")
 def joinGame():
@@ -300,6 +351,36 @@ def handle_new_question(data):
     print("changed input")
     socketio.emit("question answer", {"questionId": questionid, "answer": answer}, to=request.sid)
 
+#this may not need to be a socket - not being used as one currently
+# @socketio.on("increase wins")
+def handle_increase_wins(data):
+    playerid = data["playerid"]
+    email = current_user.email
+    print(email)
+    db.session.query(Users).filter(Users.email == email).update({'wins': Users.wins + 1})
+    db.session.commit()
+    print("increased wins")
+
+@socketio.on("increase playtime")
+def handle_increase_time(data):
+    playerid = data["playerid"]
+    gametime = data["gametime"]
+    gameid = data["gameid"]
+    email = current_user.email
+    if gameid not in timeincrease:
+        db.session.query(Users).filter(Users.email == email).update({'playtime': Users.playtime + gametime})
+        db.session.commit()
+        timeincrease[gameid] = {playerid: True}
+        print("increased time")
+    elif playerid not in timeincrease[gameid]:
+        db.session.query(Users).filter(Users.email == email).update({'playtime': Users.playtime + gametime})
+        db.session.commit()
+        timeincrease[gameid][playerid] = True
+        print("increased time")
+
+@main.route('/scoring')
+def scoring():
+    return render_template('scoring.html')
 # @main.route('/game/<gameid>/competition/leaderboard', methods=['POST'])
 # @login_required
 # def leaderboard_post():

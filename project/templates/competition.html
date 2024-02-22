@@ -24,7 +24,7 @@
             <p>ANSWER:</p>
             <input name="{{ question['title'] }}" type="text" id="{{ question['questionId'] }}" class="input"
                 placeholder="{{ question['title'] }}">
-            <button type="button" onclick="submitTextbox('{{ question['questionId'] }}')" class="button"> Submit </button>
+            <button type="button" onclick="submitTextbox('{{ question['questionId'] }}', '{{ question['title'] }}')" class="button"> Submit </button>
             <div id="{{ question['questionId'] }}-result"></div>
 
             <br>
@@ -59,8 +59,8 @@
                 var button = document.getElementById("endButton");
                 button.style.display = "block";
             }
-
-            var countdownDuration = 100;
+            console.log("{{ duration }}")
+            var countdownDuration = parseInt("{{ duration }}");
 
             var now = new Date().getTime();
             var endTime = now + countdownDuration * 1000; // convert seconds to milliseconds
@@ -106,23 +106,32 @@
             //     var data = JSON.stringify({ "question": name, "answer": content });
             //     xhr.send(data);
             // }
-
-            function submitTextbox(questionId) {
+            var answeredCorrectly = 0;
+            function submitTextbox(questionId, title) {
                 var content = document.getElementById(questionId).value;
                 if (content == questionAnswers[questionId]) {
                     var resultDiv = document.getElementById(questionId + "-result");
                     resultDiv.innerHTML = "Correct!";
                     var answerbox = document.getElementById(questionId);
                     answerbox.disabled = true;
+                    socket.emit("correct answer", { "question": title, "playerId": "{{ playerid }}", "gameId": "{{ gameid }}", "questionid": questionId });
+                    answeredCorrectly++;
+                    if(answeredCorrectly == '{{ data|length }}'){
+                        lockAnswerBoxes();
+                        showButton();
+                        socket.emit("finished questions", { "playerid": "{{ playerid }}", "gameid": "{{ gameid }}" })
+                        let currentTime = new Date().getTime();
+                        socket.emit("increase playtime", { "playerid": "{{ playerid }}", "gametime": (now - currentTime) / 1000, "gameid": "{{ gameid }}" });
+                    }
                 } else {
                     var resultDiv = document.getElementById(questionId + "-result");
                     resultDiv.innerHTML = "Incorrect!";
                 }
-
             }
 
             function seeLeaderboard() {
                 window.location.href = "/game/{{ gameid }}/leaderboard/players";
+                socket.emit("increase playtime", { "playerid": "{{ playerid }}", "gametime": countdownDuration, "gameid": "{{ gameid }}" });
             }
         </script>
 </body>

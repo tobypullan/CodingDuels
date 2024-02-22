@@ -7,6 +7,8 @@ class Users(UserMixin, db.Model):
     email = db.Column(db.String(100), unique=True)
     password = db.Column(db.String(100))
     name = db.Column(db.String(1000))
+    wins = db.Column(db.Integer)
+    playtime = db.Column(db.Integer)
     def get_id(self):
            return (self.personid)
     
@@ -24,6 +26,7 @@ class Games(db.Model):
     gamequestions = db.Column(db.Integer)
     personid = db.Column(db.Integer)
     primkey = db.Column(db.Integer, primary_key=True) # primary keys are required by SQLAlchemy
+    duration = db.Column(db.Integer)
     def get_id(self):
            return (self.gameid)
     
@@ -32,6 +35,7 @@ class game_players(db.Model):
     gameid = db.Column(db.Integer)
     playername = db.Column(db.String(255))
     questionsanswered = db.Column(db.Integer)
+    score = db.Column(db.Integer)
     def get_id(self):
            return (self.gameid)
 # class gameids(db.Model):

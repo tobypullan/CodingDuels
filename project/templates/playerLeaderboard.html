@@ -6,6 +6,20 @@
 <div style="display: flex; justify-content: center;">
 <canvas id="leaderboard" style="width:100%;max-width:700px"></canvas>
 </div>
+<table class="table">
+    <tr>
+        <th>Rank</th>
+        <th>Player</th>
+        <th>Score</th>
+    </tr>
+    {% for player in results %}
+    <tr>
+        <td>{{ loop.index }}</td>
+        <td>{{ player[0] }}</td>
+        <td>{{ player[1] }}</td>
+    </tr>
+    {% endfor %}
+</table>
 <script>
     let badScores = '{{ playerScores }}'.split(",");
     let scores = badScores.map((x) => x.replace(/\[*\]*/g, ""));

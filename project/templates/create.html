@@ -25,7 +25,7 @@
       document.getElementById('gameid-input').value = gameid;
       console.log("gameid after setting gameid element: " + gameid)
     });
-    
+
   </script>
   <h1> {{ title }} </h1>
 
@@ -36,12 +36,40 @@
     <div class="column">
       <button type="button" class="button is-narrow" id="selectQuestion"> Select Question </button>
     </div>
-    <div class="column">
-      <form method="POST" action="/start_game">
+    <form method="POST" action="/start_game">
+      <div class="column">
         <input type="hidden" name="gameid" id="gameid-input">
         <button type="submit" class="button is-narrow">Start Game</button>
-      </form>
-    </div>
+      </div>
+      <div class="column">
+        <label for="timer-seconds">Specify timer duration (in seconds):</label>
+        <select id="timer-seconds" name="timer_seconds">
+          <option value="0">0</option>
+          <option value="15">15</option>
+          <option value="30">30</option>
+          <option value="45">45</option>
+        </select>
+        <label for="timer-minutes">Specify timer duration (in minutes):</label>
+        <select id="timer-minutes" name="timer_minutes">
+          <option value="0">0</option>
+          <option value="1">1</option>
+          <option value="2">2</option>
+          <option value="3">3</option>
+          <option value="4">4</option>
+          <option value="5">5</option>
+          <option value="6">6</option>
+          <option value="7">7</option>
+          <option value="8">8</option>
+          <option value="9">9</option>
+          <option value="10">10</option>
+          <option value="11">11</option>
+          <option value="12">12</option>
+          <option value="13">13</option>
+          <option value="14">14</option>
+          <option value="15">15</option>
+        </select>
+      </div>
+    </form>
   </div>
   <script>
     $(function () {

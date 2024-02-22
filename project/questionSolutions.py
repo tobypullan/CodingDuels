@@ -4,9 +4,8 @@ def Q4Ans(n):
     else:
         return n[0] + Q4Ans(n[1:])
     
-def Q5Ans(n):
+def Q5Ans(n): #first n terms of fibonacci sequence
     terms = [1, 1]
-    #first n terms of fibonacci sequence
     for i in range(2, n):
         terms.append(terms[i-1] + terms[i-2])
     return terms
@@ -35,7 +34,9 @@ def Q9Ans(n):
     return 0
 
 def Q10Ans(n):
-    return 0
+    total = n**2
+    total *= 2**n
+    return total
 
 
 

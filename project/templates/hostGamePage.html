@@ -16,12 +16,13 @@
         console.log(data);
         var player = data.player;
         var questionName = data.question;
+        var questionScore = data.score;
 
         if (scores[player] == undefined) {
             scores[player] = 0;
             players.push(player);
         }
-        scores[player] += 1;
+        scores[player] += questionScore;
 
         // scoresArray = Object.entries(scores);
         // // Sort the array based on the second element
@@ -84,7 +85,7 @@
                         ticks: {
                             beginAtZero: true,
                             min: 0,
-                            max: {{ numberOfQuestions }}
+                            max: {{ numberOfQuestions }} * 1000
                         }
                     }]
                 }
