@@ -6,36 +6,12 @@ Enter your name:
     <input type="submit" value="Submit" class="button" id="submitName">
 </form>
 
-<!-- <script>
-    var socket = io();
-    document.getElementById("submitName").onclick = function (event) {
-        event.preventDefault();
-        let nameElement = document.getElementById("tags");
-        console.log(nameElement.value)
-        socket.emit("new player", { name: nameElement.value });
-    };
-</script> -->
-
-
 {% endblock %}
 
-<!-- <html>
-
-<head>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
-</head>
-
-<body>
-    <input name="playername" type="text" id="tags" class="input">
-    <button type="button" class="button is-narrow" id="sendPlayerName"> Submit </button>
-    <script>
-        var socket = io();
-        document.getElementById("sendPlayerName").onclick = function () {
-            console.log("emitting player name")
-            let tagsElement = document.getElementById("tags")
-            socket.emit("player join", { "playerName": tagsElement.value, 'gameid':"{{ gameid }}"});
-        };
-    </script>
-</body>
-
-</html> -->
+{% with messages = get_flashed_messages() %}
+{% if messages %}
+    <div class="notification is-danger">
+        {{ messages }}
+    </div>
+{% endif %}
+{% endwith %}

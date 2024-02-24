@@ -6,6 +6,10 @@
 <div style="display: flex; justify-content: center;">
 <canvas id="leaderboard" style="width:100%;max-width:700px"></canvas>
 </div>
+<script>
+    var trueScores = [];
+    var trueNames = [];
+</script>
 <table class="table">
     <tr>
         <th>Rank</th>
@@ -18,6 +22,10 @@
         <td>{{ player[0] }}</td>
         <td>{{ player[1] }}</td>
     </tr>
+    <script>
+        trueScores.push({{ player[1] }});
+        trueNames.push("{{ player[0] }}");
+    </script>
     {% endfor %}
 </table>
 <script>
@@ -30,10 +38,10 @@
     console.log(scores)
     const myChart = new Chart("leaderboard", {
     type: "bar",
-    data: {labels: players,
+    data: {labels: trueNames,
     datasets: [{
         label: 'Scores',
-        data: scores,
+        data: trueScores,
         backgroundColor: 
             'rgba(255, 99, 132, 0.2)',
         borderColor:

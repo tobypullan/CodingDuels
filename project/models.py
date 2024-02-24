@@ -17,7 +17,6 @@ class Questions(db.Model):
     title = db.Column(db.String(1000))
     description = db.Column(db.String(1000))
     difficulty = db.Column(db.Integer)
-    answers = db.Column(db.Integer)
     def get_id(self):
            return (self.questionid)
     
@@ -27,6 +26,8 @@ class Games(db.Model):
     personid = db.Column(db.Integer)
     primkey = db.Column(db.Integer, primary_key=True) # primary keys are required by SQLAlchemy
     duration = db.Column(db.Integer)
+    broadcast = db.Column(db.Boolean)
+    fullresults = db.Column(db.Boolean)
     def get_id(self):
            return (self.gameid)
     
@@ -38,8 +39,3 @@ class game_players(db.Model):
     score = db.Column(db.Integer)
     def get_id(self):
            return (self.gameid)
-# class gameids(db.Model):
-#     gameid = db.Column(db.Integer, primary_key=True) # primary keys are required by SQLAlchemy
-#     socketid = db.Column(db.String(1000))
-#     def get_id(self):
-#            return (self.gameid)

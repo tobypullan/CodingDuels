@@ -8,6 +8,7 @@
 <body>
     <script>
         var socket = io();
+        socket.emit("connect competition", { "gameid": "{{ gameid }}" });
     </script>
     <div class="content">
         <div id="timer"></div>
@@ -24,7 +25,8 @@
             <p>ANSWER:</p>
             <input name="{{ question['title'] }}" type="text" id="{{ question['questionId'] }}" class="input"
                 placeholder="{{ question['title'] }}">
-            <button type="button" onclick="submitTextbox('{{ question['questionId'] }}', '{{ question['title'] }}')" class="button"> Submit </button>
+            <button type="button" onclick="submitTextbox('{{ question['questionId'] }}', '{{ question['title'] }}')"
+                class="button"> Submit </button>
             <div id="{{ question['questionId'] }}-result"></div>
 
             <br>
@@ -39,7 +41,7 @@
         <script>
 
             questionAnswers = {};
-            socket.on("question answer", function (data){
+            socket.on("question answer", function (data) {
                 var questionId = data["questionId"];
                 var answer = data["answer"];
                 console.log(questionId);
@@ -81,31 +83,6 @@
                 }
             }, 1000);
 
-            // function submitTextbox(name) {
-            //     var content = document.getElementById(name).value;
-
-            //     var xhr = new XMLHttpRequest();
-            //     xhr.open("POST", "/game/{{ gameid }}/competition/{{ playerid }}", true);
-            //     xhr.setRequestHeader('Content-Type', 'application/json');
-            //     xhr.onreadystatechange = function () {
-            //         if (xhr.readyState == XMLHttpRequest.DONE && xhr.status == 200) {
-            //             var response = xhr.responseText.split("+");
-            //             console.log(response);
-            //             var question = response[0];
-            //             var result = response[1];
-            //             var resultDiv = document.getElementById(question + "-result");
-            //             if (result == "correct") {
-            //                 resultDiv.innerHTML = "Correct!";
-            //                 var answerbox = document.getElementById(question);
-            //                 answerbox.disabled = true;
-            //             } else {
-            //                 resultDiv.innerHTML = "Incorrect!";
-            //             }
-            //         }
-            //     };
-            //     var data = JSON.stringify({ "question": name, "answer": content });
-            //     xhr.send(data);
-            // }
             var answeredCorrectly = 0;
             function submitTextbox(questionId, title) {
                 var content = document.getElementById(questionId).value;
@@ -116,23 +93,76 @@
                     answerbox.disabled = true;
                     socket.emit("correct answer", { "question": title, "playerId": "{{ playerid }}", "gameId": "{{ gameid }}", "questionid": questionId });
                     answeredCorrectly++;
-                    if(answeredCorrectly == '{{ data|length }}'){
+                    if (answeredCorrectly == '{{ data|length }}') {
                         lockAnswerBoxes();
                         showButton();
                         socket.emit("finished questions", { "playerid": "{{ playerid }}", "gameid": "{{ gameid }}" })
                         let currentTime = new Date().getTime();
-                        socket.emit("increase playtime", { "playerid": "{{ playerid }}", "gametime": (now - currentTime) / 1000, "gameid": "{{ gameid }}" });
+                        socket.emit("increase playtime", { "playerid": "{{ playerid }}", "gametime": (currentTime - now) / 1000, "gameid": "{{ gameid }}" });
                     }
                 } else {
                     var resultDiv = document.getElementById(questionId + "-result");
                     resultDiv.innerHTML = "Incorrect!";
+                    socket.emit("incorrect answer", { "question": title, "playerId": "{{ playerid }}", "gameId": "{{ gameid }}", "questionid": questionId })
+                    
                 }
             }
 
             function seeLeaderboard() {
-                window.location.href = "/game/{{ gameid }}/leaderboard/players";
                 socket.emit("increase playtime", { "playerid": "{{ playerid }}", "gametime": countdownDuration, "gameid": "{{ gameid }}" });
+                socket.emit("remove files", { "playerid": "{{ playerid }}" })
+                socket.on("removed files", function (data) {
+                    window.location.href = "/game/{{ gameid }}/leaderboard/players";
+                });
             }
+
+            function showNotification(data, type) {
+                console.log("showing notification")
+                console.log(data)
+                var exisitingNotification = document.getElementById("notification");
+                if (exisitingNotification) {
+                    exisitingNotification.parentNode.removeChild(exisitingNotification);
+                    console.log("removed existing notification")
+                }
+
+                var notification = document.createElement("div");
+                if (type == "correct") {
+                    notification.className = "notification is-success";
+                } else if (type == "incorrect") {
+                    notification.className = "notification is-danger";
+                }
+                notification.id = "notification";
+
+                notification.style.position = "fixed"; // Position the notification fixed
+                notification.style.bottom = "20px"; // 20px from the bottom
+                notification.style.right = "20px"; // 20px from the right
+
+                notification.textContent = data;
+                var deleteButton = document.createElement("button");
+                deleteButton.className = "delete";
+                deleteButton.type = "button";
+                deleteButton.addEventListener('click', function () {
+                    notification.parentNode.removeChild(notification);
+                });
+                notification.appendChild(deleteButton);
+                document.body.appendChild(notification);
+            }
+
+            socket.on("player correct answer", function (data) {
+                var playername = data["player"];
+                var question = data["question"];
+                var questionId = data["questionid"];
+                console.log("player correct answer")
+                showNotification(playername + " has answered " + question + " correctly", "correct");
+            });
+
+            socket.on("player incorrect answer", function (data) {
+                var playername = data["player"];
+                var question = data["question"];
+                var questionId = data["questionid"];
+                console.log("player incorrect answer")
+                showNotification(playername + " has answered " + question + " incorrectly", "incorrect");
+            });
         </script>
 </body>
 {% endblock %}

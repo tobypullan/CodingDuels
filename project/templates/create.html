@@ -69,6 +69,18 @@
           <option value="15">15</option>
         </select>
       </div>
+      <div class="column">
+        <label class="checkbox">
+          <input type="checkbox" name="broadcast">
+          Broadcast question correct/incorrect?
+        </label>
+      </div>
+      <div class="column">
+        <label class="checkbox">
+          <input type="checkbox" name="fullResults">
+          Show full results on player leaderboard?
+        </label>
+      </div>
     </form>
   </div>
   <script>
@@ -85,7 +97,6 @@
   </script>
 
   <script>
-    // var socket = io();
     document.getElementById("selectQuestion").onclick = function () {
       console.log("emitting selected question")
       let tagsElement = document.getElementById("tags");
@@ -95,7 +106,6 @@
   </script>
 
   <script>
-    // var socket = io();
     document.getElementById("removeQuestion").onclick = function () {
       socket.emit("remove question", { questionTitle: document.getElementById("removeQuestionTitle").value, "gameid": gameid });
     };
@@ -128,7 +138,6 @@
       </table>
     </div>
     <script>
-      // var socketio = io();
       var buttons = document.getElementsByClassName("selectQuestionTable");
       for (var i = 0; i < buttons.length; i++) {
         buttons[i].onclick = function () {
@@ -177,14 +186,6 @@
         notification.className = "notification is-danger";
       }
       notification.id = "notification";
-      // notification.style.position = "fixed"; // Add this line
-      // notification.style.zIndex = "1000"; // Add this line
-      // notification.style.left = "50%"; // Add this line
-      // notification.style.top = "50%"; // Add this line
-      // notification.style.transform = "translate(-50%, -50%)"; // Add this line
-      // notification.style.backgroundColor = "white"; // Add this line
-      // notification.style.padding = "20px"; // Add this line
-      // notification.style.border = "1px solid black"; // Add this line
 
       notification.style.position = "fixed"; // Position the notification fixed
       notification.style.bottom = "20px"; // 20px from the bottom

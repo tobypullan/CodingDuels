@@ -47,6 +47,3 @@ def create_app(*args, **kwargs):
     print("about to return app")
     print(type(app))
     return app
-
-# if __name__ == '__main__':
-#     socketio.run(app, debug=True)
