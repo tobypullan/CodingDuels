@@ -7,6 +7,7 @@
     <div class="columns">
         <div class="column">
             <table class="table">
+                <!-- table of questions in the game -->
                 <thread>
                     <th>Quetions</th>
                 </thread>
@@ -20,7 +21,8 @@
             </table>
         </div>
         <div class="column">
-            <table id="players" class="table">
+            <table id="players" class="table"> 
+                <!-- table of players in the game -->
                 <thread>
                     <th>Players</th>
                 </thread>
@@ -36,46 +38,21 @@
             </form>
         </div>
     </div>
-<!-- The questions: 
-{% for question in questions %} 
-"{{question}}", 
-{% endfor %} 
-{{ questions }}
-The game id: {{ gameid }} -->
-<!-- <form method="POST">
-    <button type="submit" class="button"> REFRESH </button>
-</form> -->
-<!-- <div class="content" id="players"></div> -->
 <script>
     var socket = io();
-    socket.emit('connect waiting room', {"gameid": "{{ gameid }}"});
+    socket.emit('connect waiting room', {"gameid": "{{ gameid }}"}); // send the game id to the server so that server knows socket id of this page
     socket.on("player joined", function(playerName){
         console.log("socket id: " + socket.id);
         var playersTable = document.getElementById("players");
         var row = document.createElement("tr");
         var player = document.createElement("td");
         player.textContent = playerName;
-        row.appendChild(player);
+        row.appendChild(player); // update the table with the new player
         playersTable.appendChild(row);
         console.log(playerName);
-        // playersElement.innerHTML += playerName + "<br>";
 
     });
 </script>
-
-<!-- <script>
-    socketio.on("question removed", function (data) {
-      console.log("running question removed function");
-      removeFromRemoval(data["title"]);
-      showNotification(data["title"], "removed");
-    });
-  </script> -->
-<!-- <p>
-    NAMES:
-    {% for name in playerNames %}
-    {{ name }}
-    {% endfor %}
-</p> -->
 
 {% endblock %}
 </body>

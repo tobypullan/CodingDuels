@@ -14,6 +14,7 @@
     </tr>
     {% for player in results %}
     <tr>
+        <!-- dynamically produce table of results based on data provided by server -->
         <td>{{ loop.index }}</td>
         <td>{{ player[0] }}</td>
         <td>{{ player[1] }}</td>
@@ -22,10 +23,10 @@
 </table>
 <script>
     let badScores = '{{ playerScores }}'.split(",");
-    let scores = badScores.map((x) => x.replace(/\[*\]*/g, ""));
+    let scores = badScores.map((x) => x.replace(/\[*\]*/g, "")); // regex expression to remove unwanted characters
     let badNames = '{{ playerNames }}'.split(",");
     console.log(badNames)
-    let players = badNames.map((x) => x.replace(/\[*&#39;\]*/g, ""));
+    let players = badNames.map((x) => x.replace(/\[*&#39;\]*/g, "")); // regex expression to remove unwanted characters
     console.log(players)
     console.log(scores)
     const myChart = new Chart("leaderboard", {

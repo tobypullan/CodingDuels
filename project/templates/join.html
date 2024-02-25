@@ -3,15 +3,8 @@
 Enter your name:
 <form method="POST">
     <input name="playername" type="text" id="tags" class="input">
+    <!-- sends player name to the server -->
     <input type="submit" value="Submit" class="button" id="submitName">
 </form>
 
 {% endblock %}
-
-{% with messages = get_flashed_messages() %}
-{% if messages %}
-    <div class="notification is-danger">
-        {{ messages }}
-    </div>
-{% endif %}
-{% endwith %}

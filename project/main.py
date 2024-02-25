@@ -57,14 +57,16 @@ def handle_select_question(data):
     newGameQuestion = Games(gameid=data["gameid"], gamequestions=questionid.questionid, personid=current_user.personid) # adding the gameid, questionid and personid to the Games table by creating new object
     db.session.add(newGameQuestion)
     db.session.commit() # committing the object to the database
-    socketio.emit("question selected", {"title": questionid.title, "description": questionid.description, "difficulty": questionid.difficulty}, room=data["gameid"])
+    socketio.emit("question selected", {"title": questionid.title, "description": questionid.description, "difficulty": questionid.difficulty}, to=request.sid)
 
 @socketio.on("remove question")
 def handle_remove_question(questionTitle):
     questionid = Questions.query.filter_by(title=questionTitle["title"]).first()
+    difficulty = questionid.difficulty
+    description = questionid.description
     db.session.query(Games).filter(Games.gamequestions == questionid.questionid).delete()
     db.session.commit()
-    socketio.emit("question removed", {"title": questionid.title})
+    socketio.emit("question removed", {"title": questionid.title, "description": description, "difficulty": difficulty}, to=request.sid)
 
 @main.route('/start_game', methods=['POST'])
 @login_required
@@ -228,35 +230,35 @@ def handle_incorrect_answer(data):
             if player != request.sid: # doesn't tell the player that answered the question incorrectly that they answered the question incorrectly
                 socketio.emit('player incorrect answer', {'question': questionName, 'player': playerName}, to=player) # sends the player's name to the other players in the game so that they can see the player has answered a question incorrectly
 
-@main.route('/game/<gameid>/competition/<playerid>', methods=['POST'])
-def competition_player_post(gameid, playerid):
-    data = request.get_json()
-    questionName = data['question']
-    questionAnswer = data['answer']
-    questions = Questions.query.filter_by(title = questionName).first()
-    if int(questions.answers) == int(questionAnswer):
-        print("correct")
-        db.session.query(game_players).filter(game_players.playerid == playerid).update({'questionsanswered': game_players.questionsanswered + 1})
-        print(f"{questionName}+correct")
-        playerName = game_players.query.filter_by(playerid=playerid).first().playername
-        socketio.emit('question answered', {'question': questionName, 'player': playerName}, to=leaderboardrooms[int(gameid)])      
-        db.session.commit()
-        return f"{questionName}+correct"
-    else:
-        print("incorrect")
-        for player in competitionPlayers[int(gameid)]:
-            if player != request.sid:
-                socketio.emit('player incorrect answer', {'question': questionName, 'player': playerName}, to=player)
-        return f"{questionName}+incorrect"
+# @main.route('/game/<gameid>/competition/<playerid>', methods=['POST'])
+# def competition_player_post(gameid, playerid):
+#     data = request.get_json()
+#     questionName = data['question']
+#     questionAnswer = data['answer']
+#     questions = Questions.query.filter_by(title = questionName).first()
+#     if int(questions.answers) == int(questionAnswer):
+#         print("correct")
+#         db.session.query(game_players).filter(game_players.playerid == playerid).update({'questionsanswered': game_players.questionsanswered + 1})
+#         print(f"{questionName}+correct")
+#         playerName = game_players.query.filter_by(playerid=playerid).first().playername
+#         socketio.emit('question answered', {'question': questionName, 'player': playerName}, to=leaderboardrooms[int(gameid)])      
+#         db.session.commit()
+#         return f"{questionName}+correct"
+#     else:
+#         print("incorrect")
+#         for player in competitionPlayers[int(gameid)]:
+#             if player != request.sid:
+#                 socketio.emit('player incorrect answer', {'question': questionName, 'player': playerName}, to=player)
+#         return f"{questionName}+incorrect"
         
 
 @socketio.on("finished questions")
 def handle_finished_questions(data):
     gameid = int(data["gameid"])
     playerid = int(data["playerid"])
-    if gameid not in winners:
-        winners[gameid] = playerid
-        handle_increase_wins(data)
+    if gameid not in winners: # check if there is already a winner for that game
+        winners[gameid] = playerid # updates dictionary so that if checked for another player, they don't get credited with winning
+        handle_increase_wins(data) # function to increase the player's wins
 
 # PLAYING A GAME (HOST)
 
@@ -273,16 +275,16 @@ def competition(gameid):
 @socketio.on("leaderboard connect")
 def handle_leaderboard_connect(data):
     gameid = int(data["gameid"])
-    leaderboardrooms[gameid] = request.sid
+    leaderboardrooms[gameid] = request.sid # adds the gameid and the sid of the leaderboard to the leaderboardrooms dictionary so that the server can send socket messages to leaderboard
 
 @main.route('/game/<gameid>/competition/leaderboard')
 @login_required
 def leaderboard(gameid):
-    players = game_players.query.filter_by(gameid=gameid).all()
-    numberOfQuestions = len(Games.query.filter_by(gameid=gameid).all())
+    players = game_players.query.filter_by(gameid=gameid).all() # gets all the players in the game
+    numberOfQuestions = len(Games.query.filter_by(gameid=gameid).all()) # gets the number of questions in the game as each question is stored as a separate row in the database
     playerNames = []
     playerScores = []
-    for player in players:
+    for player in players: # loops through the players and adds their names and scores to the playerNames and playerScores arrays
         playerNames.append(player.playername)
         playerScores.append(player.score)
     return render_template('hostGamePage.html', gameid=gameid, playerNames=playerNames, playerScores=playerScores, numberOfQuestions=numberOfQuestions)
@@ -291,10 +293,11 @@ def leaderboard(gameid):
 def handle_new_question(data):
     questionid = data["questionId"]
     playerid = data["playerId"]
+    # dictionary maps each questionID to its respective function
     questionFileMatch = {"4": Q4(playerid), "5": Q5(playerid), "6": Q6(playerid), "7": Q7(playerid), "8": Q8(playerid), "9": Q9(playerid), "10": Q10(playerid), "11": Q11(playerid), "12": Q12(playerid), "13": Q13(playerid), "14": Q14(playerid), "15": Q15(playerid)}
     answer = questionFileMatch[questionid]
     print("changed input")
-    socketio.emit("question answer", {"questionId": questionid, "answer": answer}, to=request.sid)
+    socketio.emit("question answer", {"questionId": questionid, "answer": answer}, to=request.sid) # sends only to the player that requested the questions
 
 # ENDING A GAME
 
@@ -302,7 +305,7 @@ def handle_increase_wins(data):
     playerid = data["playerid"]
     email = current_user.email
     print(email)
-    db.session.query(Users).filter(Users.email == email).update({'wins': Users.wins + 1})
+    db.session.query(Users).filter(Users.email == email).update({'wins': Users.wins + 1}) # increments the player's wins by 1
     db.session.commit()
     print("increased wins")
 
@@ -313,15 +316,16 @@ def handle_increase_time(data):
     gameid = data["gameid"]
     email = current_user.email
     print(f"gametime: {gametime} for playerid: {playerid} in gameid: {gameid}")
-    if gameid not in timeincrease:
-        db.session.query(Users).filter(Users.email == email).update({'playtime': Users.playtime + gametime})
+    if gameid not in timeincrease: # checks if the gameid is already in the timeincrease dictionary
+        db.session.query(Users).filter(Users.email == email).update({'playtime': Users.playtime + gametime}) # increments the player's playtime by the gametime
         db.session.commit()
-        timeincrease[gameid] = {playerid: True}
+        timeincrease[gameid] = {playerid: True} # adds the gameid and the playerid to the timeincrease dictionary and creates dictionary for playerids to be added to
+        # so that the player's time is only increased once
         print("increased time")
     elif playerid not in timeincrease[gameid]:
         db.session.query(Users).filter(Users.email == email).update({'playtime': Users.playtime + gametime})
         db.session.commit()
-        timeincrease[gameid][playerid] = True
+        timeincrease[gameid][playerid] = True # adds the playerid to the gameid in the timeincrease dictionary so that the player's time is only increased once
         print("increased time")
 
 @socketio.on("remove files")
@@ -329,43 +333,41 @@ def handle_remove_files(data):
     playerid = data["playerid"]
     for i in range(4,14):
         print(f"removing project/static/{playerid}{i}.txt")
-        os.remove(f"project/static/{playerid}{i}.txt")
-    socketio.emit("removed files", to=request.sid)
+        os.remove(f"project/static/{playerid}{i}.txt") # removes the files that were created for the player's questions
+    socketio.emit("removed files", to=request.sid) # once files have been removed, tell client so that can redirect to the leaderboard page
 
 # THE PLAYER LEADERBOARD
 
 @main.route("/game/<gameid>/leaderboard/players")
 def endGameLeaderboard(gameid):
     fullresults = Games.query.filter_by(gameid=gameid).first().fullresults
-    if fullresults == True:
+    if fullresults == True: # check whether game creator wants full results to be displayed
         print(f"endgame leaderboard gameid arg: {gameid}")
-        players = game_players.query.filter_by(gameid=gameid).order_by(game_players.score.desc()).all()
+        players = game_players.query.filter_by(gameid=gameid).order_by(game_players.score.desc()).all() # gets all the players in the game and orders them by score
         playerNames = []
         playerScores = []
-        results = {}
+        results = []
         for player in players:
             playerNames.append(player.playername)
             playerScores.append(player.questionsanswered)
-            results[player.playername] = player.score
-        playerNames = playerNames[:3]
+            results.append([player.playername, player.questionsanswered]) # stores results in a way that can be handled by the table on leaderboard page easily
+        playerNames = playerNames[:3] # takes only the top three players to be displayed on the bar chart
         playerScores = playerScores[:3]
-        print(playerNames)
-        print(playerScores)
         return render_template('playerLeaderboard.html', gameid=gameid, playerNames=playerNames, playerScores=playerScores, results=results)
     else:
         players = game_players.query.filter_by(gameid=gameid).order_by(game_players.score.desc()).limit(3)
         playerNames = []
         playerScores = []
-        results = {}
+        results = []
         for player in players:
             playerNames.append(player.playername)
             playerScores.append(player.score)
-            results[player.playername] = player.score
+            results.append([player.playername, player.score])
         return render_template('playerLeaderboard.html', gameid=gameid, playerNames=playerNames, playerScores=playerScores, results=results)
 
 # SCORING INSTRUCTIONS
 
-@main.route('/scoring')
+@main.route('/scoring') # scoring instructions page
 def scoring():
     return render_template('scoring.html')
 

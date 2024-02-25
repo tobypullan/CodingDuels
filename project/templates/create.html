@@ -13,12 +13,11 @@
 
 <body>
   <script>
-    // var gameid = Math.floor(Math.random() * 100000);
-    // console.log(gameid)
     var socket = io();
     var gameid;
-    socket.emit("create game");
+    socket.emit("create game"); // tell the server to begin the process of creating a game
     socket.on("game created", function (data) {
+      // once game has been created, display gameid to user
       console.log("game created")
       console.log(data)
       gameid = data["gameid"];
@@ -84,14 +83,14 @@
     </form>
   </div>
   <script>
-    $(function () {
+    $(function () { // function to autocomplete question titles
       var availableTags = [
         {% for question in questionData %} 
             "{{question.title}}",
       {% endfor %} 
     ];
     $("#tags").autocomplete({
-      source: availableTags
+      source: availableTags // options for autocomplete are the question titles
     }); 
   } ); 
   </script>
@@ -101,13 +100,14 @@
       console.log("emitting selected question")
       let tagsElement = document.getElementById("tags");
       console.log("gameid: " + gameid)
-      socket.emit("select question", { title: tagsElement.value, "gameid": gameid });
+      socket.emit("select question", { title: tagsElement.value, "gameid": gameid }); // emit the selected question to the server
     };
   </script>
 
   <script>
     document.getElementById("removeQuestion").onclick = function () {
       socket.emit("remove question", { questionTitle: document.getElementById("removeQuestionTitle").value, "gameid": gameid });
+      // emit the question to be removed to the server
     };
   </script>
 
@@ -124,6 +124,7 @@
         </thread>
         <tbody>
           {% for question in questionData %}
+          <!-- dynamically create table based on the questions in the database -->
           <tr>
             <td>{{ question.title }}</td>
             <td>{{ question.difficulty }}</td>
@@ -139,7 +140,7 @@
     </div>
     <script>
       var buttons = document.getElementsByClassName("selectQuestionTable");
-      for (var i = 0; i < buttons.length; i++) {
+      for (var i = 0; i < buttons.length; i++) { // iterate over questions in the table and add event listeners to each button
         buttons[i].onclick = function () {
           console.log("emitting question" + i + this.getAttribute("titleData"))
           console.log("gameid: " + gameid)
@@ -163,18 +164,19 @@
   </div>
 
   <script>
-    socket.on("question removed", function (data) {
+    socket.on("question removed", function (data) { // when a question is removed, remove it from the table of questions in the game
       console.log("running question removed function");
       removeFromRemoval(data["title"]);
       showNotification(data["title"], "removed");
+      addToSelection(data);
     });
   </script>
   <script>
-    function showNotification(data, type) {
+    function showNotification(data, type) { // this function is the same as the one in competition.html to show when a player gets a question right or wrong
       console.log("showing notification")
       console.log(data)
       var exisitingNotification = document.getElementById("notification");
-      if (exisitingNotification) {
+      if (exisitingNotification) { // if a notification already exists, remove it
         exisitingNotification.parentNode.removeChild(exisitingNotification);
         console.log("removed existing notification")
       }
@@ -187,9 +189,9 @@
       }
       notification.id = "notification";
 
-      notification.style.position = "fixed"; // Position the notification fixed
-      notification.style.bottom = "20px"; // 20px from the bottom
-      notification.style.right = "20px"; // 20px from the right
+      notification.style.position = "fixed";
+      notification.style.bottom = "20px";
+      notification.style.right = "20px";
 
       notification.textContent = data + " has been " + type;
       var deleteButton = document.createElement("button");
@@ -199,11 +201,11 @@
         notification.parentNode.removeChild(notification);
       });
       notification.appendChild(deleteButton);
-      document.body.appendChild(notification);
+      document.body.appendChild(notification); 
     }
   </script>
   <script>
-    function addQuestionToRemoval(data) {
+    function addQuestionToRemoval(data) { // adds question to the table of questions in the game
       var table = document.getElementById("removeTable");
       var row = document.createElement("tr");
       var question = document.createElement("td");
@@ -213,13 +215,49 @@
       removeButton.type = "button";
       removeButton.className = "button is-one-quarter removeQuestionTable";
       removeButton.textContent = "Remove";
-      removeButton.onclick = function () {
+      removeButton.onclick = function () { // add event listener to remove button
         socket.emit("remove question", { title: data["title"] });
         console.log("emitting question for removal" + data["title"])
       };
-      remove.appendChild(removeButton);
+      remove.appendChild(removeButton); // display question in the table
       row.appendChild(question);
       row.appendChild(remove);
+      table.appendChild(row);
+    }
+    function removeQuestionFromSelection(data) { // remove question from the selection table so that it can't be selected again
+      var table = document.getElementById("addTable");
+      var rows = table.getElementsByTagName("tr");
+      for (var i = 1; i < rows.length + 1; i++) {
+        var row = rows[i];
+        var question = row.getElementsByTagName("td")[0].textContent;
+        if (question == data["title"]) {
+          row.parentNode.removeChild(row);
+        }
+      }
+    }
+    function addToSelection(data) { // add the question back to the selection table
+      var table = document.getElementById("addTable");
+      var row = document.createElement("tr");
+      var question = document.createElement("td");
+      question.textContent = data["title"];
+      var difficulty = document.createElement("td");
+      difficulty.textContent = data["difficulty"];
+      var description = document.createElement("td");
+      description.textContent = data["description"];
+      var add = document.createElement("td");
+      var addButton = document.createElement("button");
+      addButton.type = "button";
+      addButton.className = "button is-one-quarter selectQuestionTable";
+      addButton.textContent = "Add";
+      addButton.titleData = data["title"];
+      addButton.onclick = function () { // add event listener to add button
+        socket.emit("select question", { title: data["title"], "gameid": gameid});
+      };
+      add.appendChild(addButton);
+      row.appendChild(question);
+      row.appendChild(difficulty);
+      row.appendChild(description);
+      row.appendChild(add);
       table.appendChild(row);
     }
   </script>
@@ -228,10 +266,11 @@
       console.log(data);
       showNotification(data.title, "selected");
       addQuestionToRemoval(data);
+      removeQuestionFromSelection(data);
     });
   </script>
   <script>
-    function removeFromRemoval(title) {
+    function removeFromRemoval(title) { // remove question from the table of questions in the game
       console.log("running remove from removal function")
       var table = document.getElementById("removeTable");
       var rows = table.getElementsByTagName("tr");

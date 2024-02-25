@@ -13,6 +13,7 @@
     <div class="content">
         <div id="timer"></div>
         <form method="POST" id="answersForm">
+            <!-- Displays all questions with input boxes for answers -->
             {% for question in data %}
             Question:
             {{ question["title"] }}
@@ -32,6 +33,7 @@
             <br>
             <br>
             <script>
+                // Emit event to change input for every question
                 socket.emit("change input", { "questionId": "{{ question['questionId'] }}", "playerId": "{{ playerid }}" });
             </script>
             {% endfor %}
@@ -40,7 +42,7 @@
             Leaderboard </button>
         <script>
 
-            questionAnswers = {};
+            questionAnswers = {}; // Stores answers for each question in a dictionary
             socket.on("question answer", function (data) {
                 var questionId = data["questionId"];
                 var answer = data["answer"];
@@ -53,7 +55,7 @@
             function lockAnswerBoxes(name) {
                 var answerboxes = document.querySelectorAll("input[type=text]");
                 answerboxes.forEach(function (answerbox) {
-                    answerbox.disabled = true;
+                    answerbox.disabled = true; // prevent user from entering more answers
                 });
             }
 
@@ -62,71 +64,75 @@
                 button.style.display = "block";
             }
             console.log("{{ duration }}")
-            var countdownDuration = parseInt("{{ duration }}");
+            var countdownDuration = parseInt("{{ duration }}"); // converts duration to an integer
 
-            var now = new Date().getTime();
-            var endTime = now + countdownDuration * 1000; // convert seconds to milliseconds
+            var now = new Date().getTime(); // the time that the game was started at
+            var endTime = now + countdownDuration; // the time that the game will end at
 
-            var x = setInterval(function () {
-                var now = new Date().getTime();
+            var x = setInterval(function () { // a set interval function is one that runs periodically, in this case one that runs every second
+                //var now = new Date().getTime();
                 var distance = endTime - now;
-                var minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-                var seconds = Math.floor((distance % (1000 * 60)) / 1000);
+                var minutes = Math.floor((distance % (60 * 60)) / (60));
+                var seconds = Math.floor((distance % (60)));
 
-                document.getElementById("timer").innerHTML = minutes + "mins" + seconds + "s";
+                document.getElementById("timer").innerHTML = minutes + "mins" + seconds + "s"; // display the time left in the timer div
 
                 if (distance < 0) {
+                    // once the time is up, clear the interval and display "EXPIRED" in the timer div
                     clearInterval(x);
                     document.getElementById("timer").innerHTML = "EXPIRED";
-                    lockAnswerBoxes();
-                    showButton();
+                    lockAnswerBoxes(); // prevent user from entering more answers
+                    showButton(); // allow user to redirect to leaderboard
                 }
-            }, 1000);
+            }, 1000); // the interval is set to run every 1000 milliseconds, or every second
 
             var answeredCorrectly = 0;
             function submitTextbox(questionId, title) {
-                var content = document.getElementById(questionId).value;
+                var content = document.getElementById(questionId).value; // answer that user entered
                 if (content == questionAnswers[questionId]) {
                     var resultDiv = document.getElementById(questionId + "-result");
-                    resultDiv.innerHTML = "Correct!";
+                    resultDiv.innerHTML = "Correct!"; // tell user they were correct
                     var answerbox = document.getElementById(questionId);
-                    answerbox.disabled = true;
-                    socket.emit("correct answer", { "question": title, "playerId": "{{ playerid }}", "gameId": "{{ gameid }}", "questionid": questionId });
-                    answeredCorrectly++;
-                    if (answeredCorrectly == '{{ data|length }}') {
+                    answerbox.disabled = true; // prevent user from entering another answer
+                    socket.emit("correct answer", { "question": title, "playerId": "{{ playerid }}", "gameId": "{{ gameid }}", "questionid": questionId }); // emit event to tell server that user answered correctly
+                    answeredCorrectly++; // increment the number of questions answered correctly
+                    if (answeredCorrectly == '{{ data|length }}') { // checking if all answers answered correctly
                         lockAnswerBoxes();
-                        showButton();
-                        socket.emit("finished questions", { "playerid": "{{ playerid }}", "gameid": "{{ gameid }}" })
-                        let currentTime = new Date().getTime();
-                        socket.emit("increase playtime", { "playerid": "{{ playerid }}", "gametime": (currentTime - now) / 1000, "gameid": "{{ gameid }}" });
+                        showButton(); // allow user to redirect to leaderboard and prevent from answering questions
+                        socket.emit("finished questions", { "playerid": "{{ playerid }}", "gameid": "{{ gameid }}" }); // emit event to tell server that user has finished answering questions
+                        let currentTime = new Date().getTime(); // get the current time to calculate the time the user spent playing
+                        socket.emit("increase playtime", { "playerid": "{{ playerid }}", "gametime": (currentTime - now), "gameid": "{{ gameid }}" }); // emit event to tell server to increase the time the user spent playing
                     }
                 } else {
                     var resultDiv = document.getElementById(questionId + "-result");
-                    resultDiv.innerHTML = "Incorrect!";
-                    socket.emit("incorrect answer", { "question": title, "playerId": "{{ playerid }}", "gameId": "{{ gameid }}", "questionid": questionId })
+                    resultDiv.innerHTML = "Incorrect!"; // tell user they were incorrect
+                    socket.emit("incorrect answer", { "question": title, "playerId": "{{ playerid }}", "gameId": "{{ gameid }}", "questionid": questionId }) // emit event to tell server that user answered incorrectly
                     
                 }
             }
 
             function seeLeaderboard() {
+                // if see leaderboard function is being run, means the player has finished answering questions so need to tell server to increase playtime and remove input files
                 socket.emit("increase playtime", { "playerid": "{{ playerid }}", "gametime": countdownDuration, "gameid": "{{ gameid }}" });
                 socket.emit("remove files", { "playerid": "{{ playerid }}" })
                 socket.on("removed files", function (data) {
+                    // once files have been removed, redirect to leaderboard
                     window.location.href = "/game/{{ gameid }}/leaderboard/players";
                 });
             }
 
             function showNotification(data, type) {
-                console.log("showing notification")
-                console.log(data)
+                // this function shows a small box at the bottom right of the screen to notify the user of something
+                console.log("showing notification");
+                console.log(data);
                 var exisitingNotification = document.getElementById("notification");
-                if (exisitingNotification) {
+                if (exisitingNotification) { // if already a notification, remove it
                     exisitingNotification.parentNode.removeChild(exisitingNotification);
-                    console.log("removed existing notification")
+                    console.log("removed existing notification");
                 }
-
+                // create new notification
                 var notification = document.createElement("div");
-                if (type == "correct") {
+                if (type == "correct") { // choose the style of the notification based on the type
                     notification.className = "notification is-success";
                 } else if (type == "incorrect") {
                     notification.className = "notification is-danger";
@@ -137,18 +143,20 @@
                 notification.style.bottom = "20px"; // 20px from the bottom
                 notification.style.right = "20px"; // 20px from the right
 
-                notification.textContent = data;
+                notification.textContent = data; // set the text of the notification to the data
                 var deleteButton = document.createElement("button");
                 deleteButton.className = "delete";
                 deleteButton.type = "button";
                 deleteButton.addEventListener('click', function () {
                     notification.parentNode.removeChild(notification);
                 });
-                notification.appendChild(deleteButton);
-                document.body.appendChild(notification);
+                notification.appendChild(deleteButton); // add button to remove the notification
+                document.body.appendChild(notification); // add the notification to the body of the page
             }
 
             socket.on("player correct answer", function (data) {
+                // when a player answers a question correctly, show a notification with their name and the question they answered
+                // as they answered correctly, colour the notification with "correct" style
                 var playername = data["player"];
                 var question = data["question"];
                 var questionId = data["questionid"];
@@ -157,6 +165,7 @@
             });
 
             socket.on("player incorrect answer", function (data) {
+                // similar to correct answer but for incorrect answers so the style of the notification is "incorrect"
                 var playername = data["player"];
                 var question = data["question"];
                 var questionId = data["questionid"];

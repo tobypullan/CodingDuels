@@ -10,13 +10,13 @@
     <script>
         var socket = io();
         console.log("testing waiting room log")
-        socket.emit("connect waiting room players", {"gameid": "{{ gameid }}", "playerid": "{{ playerid }}"});
+        socket.emit("connect waiting room players", {"gameid": "{{ gameid }}", "playerid": "{{ playerid }}"}); // send the game id to the server so that server knows socket id of this page
         socket.on("player joined waiting room", function(data){
             console.log(data);
         });
-        socket.on("game started", function(data){
+        socket.on("game started", function(data){ // listen for server telling client that game as started
             console.log("redirecting to game page")
-            window.location.href = '/game/' + data["gameid"].toString() + '/competition/' + data["playerid"].toString();
+            window.location.href = '/game/' + data["gameid"].toString() + '/competition/' + data["playerid"].toString(); // redirect to game page
         });
     </script>
     <h1>The waiting room</h1>

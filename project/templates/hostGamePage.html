@@ -8,11 +8,11 @@
 <script type="text/javascript" charset="utf-8">
     var socket = io();
     socket.emit('leaderboard connect', { "gameid": "{{ gameid }}" })
-    var scores = {};
+    var scores = {}; // dictionary of player scores key is player id and value is score
     var players = [];
     var scoresArray = [];
     var playerScores = [];
-    socket.on('question answered', function (data) {
+    socket.on('question answered', function (data) { // when a question has been answered correclty
         console.log(data);
         var player = data.player;
         var questionName = data.question;
@@ -24,7 +24,7 @@
         }
         scores[player] += questionScore;
 
-        playerScores = [];
+        playerScores = []; // array of player scores to be used in the chart
         for (var key in scores) {
             playerScores.push(scores[key]);
         }
@@ -45,10 +45,10 @@
         const myChart = new Chart("leaderboardChart", {
             type: "bar",
             data: {
-                labels: players,
+                labels: players, // the x axis labels
                 datasets: [{
-                    label: "Scores",
-                    data: scoresArray,
+                    label: "Score",
+                    data: scoresArray, // the y axis data
                     backgroundColor:
                         'rgba(255, 99, 132, 0.2)',
                     borderColor:
@@ -62,7 +62,7 @@
                         ticks: {
                             beginAtZero: true,
                             min: 0,
-                            max: {{ numberOfQuestions }} * 1000
+                            max: {{ numberOfQuestions }} * 1000 // the max score is the number of questions times 1000 so that the y axis is scaled correctly
                         }
                     }]
                 }
