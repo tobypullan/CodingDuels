@@ -179,15 +179,8 @@ def merge(left, right):
 
     return output
 
-# def Q16Ans(list1, list2):
-#     class ListNode:
-#         def __init__(self, val=0, next=None):
-#             self.val = val
-#             self.next = next
-#     for i in range(len(list1)):
-#         print(list1[i].val)
-#     print(f"list1: {list1}")
-#     print(f"list2: {list2}")
+# def Q16Ans(list1, list2): This is the code to solve the linked list question, however does not fit with the game format so leaving it out
+
 #     dummy = ListNode()
 #     tail = dummy
 #     sortedList = []

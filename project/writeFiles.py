@@ -115,29 +115,29 @@ def Q15(playerid):
     write(playerid, 15, strData)
     return Q15Ans(data)
         
-# def Q16(playerid):
-#     class ListNode:
-#         def __init__(self, val=0, next=None):
-#             self.val = val
-#             self.next = next
+def Q16(playerid):
+    class ListNode:
+        def __init__(self, val=0, next=None):
+            self.val = val
+            self.next = next
 
-#     initialVal1 = random.randint(1,20)
-#     initialVal2 = random.randint(1,20)
-#     list1 = ListNode(initialVal1)
-#     list2 = ListNode(initialVal2)
-#     list1str = [str(initialVal1)]
-#     list2str = [str(initialVal2)]
+    initialVal1 = random.randint(1,20)
+    initialVal2 = random.randint(1,20)
+    list1 = ListNode(initialVal1)
+    list2 = ListNode(initialVal2)
+    list1str = [str(initialVal1)]
+    list2str = [str(initialVal2)]
 
-#     for i in range(10):
-#         nodeVal = random.randint(1,20)
-#         list1.next = ListNode(nodeVal)
-#         list1str.append(str(nodeVal))
-#     appendLine(playerid, 16, ' '.join(list1str))
+    for i in range(10):
+        nodeVal = random.randint(1,20)
+        list1.next = ListNode(nodeVal)
+        list1str.append(str(nodeVal))
+    appendLine(playerid, 16, ' '.join(list1str))
 
-#     for i in range(10):
-#         nodeVal = random.randint(1,20)
-#         list2.next = ListNode(nodeVal)
-#         list2str.append(str(nodeVal))
-#     appendLine(playerid, 16, ' '.join(list2str))
+    for i in range(10):
+        nodeVal = random.randint(1,20)
+        list2.next = ListNode(nodeVal)
+        list2str.append(str(nodeVal))
+    appendLine(playerid, 16, ' '.join(list2str))
 
-#     return Q16Ans(list1, list2)
+    return 0 # question doesn't fit with the format of my game. However, still tried to make it work so am leaving the class here for future reference.
