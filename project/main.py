@@ -97,6 +97,12 @@ def start_game():
     redirect_url = '/game/' + str(gameid)
     return redirect(redirect_url)
 
+
+@socketio.on("connect waiting room")
+def handle_connect_waiting_room(data):
+    gameid = int(data["gameid"])
+    waitingrooms[gameid] = request.sid # adding the gameid and the sid of the waiting room to the waitingrooms dictionary
+
 @main.route('/game/<gameid>') # page where gameid, questions, players in game are displayed and waiting for game to begin
 @login_required
 def game(gameid):
@@ -151,11 +157,6 @@ def handle_join_game(data):
 
 # THE WAITING ROOM
 
-@socketio.on("connect waiting room")
-def handle_connect_waiting_room(data):
-    gameid = int(data["gameid"])
-    waitingrooms[gameid] = request.sid # adding the gameid and the sid of the waiting room to the waitingrooms dictionary
-
 @main.route('/game/<gameid>/waiting_room/<playerid>') # the waiting room where the player waits for the game to start
 def waiting_room(gameid, playerid):
     return render_template('waiting_room.html', gameid=gameid, playerid=playerid)
@@ -169,6 +170,7 @@ def handle_connect_waiting_room_players(data):
     socketio.emit("player joined waiting room", to=request.sid)
 
 # PLAYING A GAME (PLAYER)
+
 @socketio.on("connect competition")
 def handle_connect_competition(data):
     gameid = int(data["gameid"])
@@ -230,28 +232,6 @@ def handle_incorrect_answer(data):
             if player != request.sid: # doesn't tell the player that answered the question incorrectly that they answered the question incorrectly
                 socketio.emit('player incorrect answer', {'question': questionName, 'player': playerName}, to=player) # sends the player's name to the other players in the game so that they can see the player has answered a question incorrectly
 
-# @main.route('/game/<gameid>/competition/<playerid>', methods=['POST'])
-# def competition_player_post(gameid, playerid):
-#     data = request.get_json()
-#     questionName = data['question']
-#     questionAnswer = data['answer']
-#     questions = Questions.query.filter_by(title = questionName).first()
-#     if int(questions.answers) == int(questionAnswer):
-#         print("correct")
-#         db.session.query(game_players).filter(game_players.playerid == playerid).update({'questionsanswered': game_players.questionsanswered + 1})
-#         print(f"{questionName}+correct")
-#         playerName = game_players.query.filter_by(playerid=playerid).first().playername
-#         socketio.emit('question answered', {'question': questionName, 'player': playerName}, to=leaderboardrooms[int(gameid)])      
-#         db.session.commit()
-#         return f"{questionName}+correct"
-#     else:
-#         print("incorrect")
-#         for player in competitionPlayers[int(gameid)]:
-#             if player != request.sid:
-#                 socketio.emit('player incorrect answer', {'question': questionName, 'player': playerName}, to=player)
-#         return f"{questionName}+incorrect"
-        
-
 @socketio.on("finished questions")
 def handle_finished_questions(data):
     gameid = int(data["gameid"])
@@ -259,6 +239,15 @@ def handle_finished_questions(data):
     if gameid not in winners: # check if there is already a winner for that game
         winners[gameid] = playerid # updates dictionary so that if checked for another player, they don't get credited with winning
         handle_increase_wins(data) # function to increase the player's wins
+
+
+def handle_increase_wins(data):
+    playerid = data["playerid"]
+    email = current_user.email
+    print(email)
+    db.session.query(Users).filter(Users.email == email).update({'wins': Users.wins + 1}) # increments the player's wins by 1
+    db.session.commit()
+    print("increased wins")
 
 # PLAYING A GAME (HOST)
 
@@ -300,14 +289,6 @@ def handle_new_question(data):
     socketio.emit("question answer", {"questionId": questionid, "answer": answer}, to=request.sid) # sends only to the player that requested the questions
 
 # ENDING A GAME
-
-def handle_increase_wins(data):
-    playerid = data["playerid"]
-    email = current_user.email
-    print(email)
-    db.session.query(Users).filter(Users.email == email).update({'wins': Users.wins + 1}) # increments the player's wins by 1
-    db.session.commit()
-    print("increased wins")
 
 @socketio.on("increase playtime")
 def handle_increase_time(data):
