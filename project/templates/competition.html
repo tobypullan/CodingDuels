@@ -68,14 +68,11 @@
 
             var now = new Date().getTime(); // the time that the game was started at
             var endTime = (now + (countdownDuration * 1000)); // the time that the game will end at
-            console.log(endTime);
             var x = setInterval(function () { // a set interval function is one that runs periodically, in this case one that runs every second
                 var now = new Date().getTime();
-                console.log(now)
                 var distance = (endTime - now) / 1000;
                 var minutes = Math.floor((distance % (60 * 60)) / (60));
                 var seconds = Math.floor((distance % (60)));
-
                 document.getElementById("timer").innerHTML = minutes + "mins" + seconds + "s"; // display the time left in the timer div
 
                 if (distance < 0) {

@@ -141,7 +141,7 @@ def join_game(gameid):
 @main.route('/game/<gameid>/join', methods=['POST']) # handles the player name and adds the player to the game
 def join_game_post(gameid):
     name = request.form.get('playername')
-    newPlayer = game_players(gameid=gameid, playername=name, questionsanswered=0, score=0) # add the player that has just joined to the game players table
+    newPlayer = game_players(gameid=gameid, playername=name, score=0) # add the player that has just joined to the game players table
     db.session.add(newPlayer)
     db.session.commit()
     print("player name: " + name)
@@ -204,8 +204,8 @@ def handle_correct_answer(data):
     else:
         questionOrder[gameid][questionid].append(playerid) # adds the player to the questionOrder so that the player's score can be calculated - players are added in order of answering the question
     questions = Questions.query.filter_by(title = questionName).first()
-    db.session.query(game_players).filter(game_players.playerid == playerid).update({'questionsanswered': game_players.questionsanswered + 1})
-    db.session.commit()
+    # db.session.query(game_players).filter(game_players.playerid == playerid).update({'questionsanswered': game_players.questionsanswered + 1})
+    # db.session.commit()
     print(f"player id index: {questionOrder[gameid][questionid].index(playerid)}")
     print(f"floor div using index + 1: {1000 // (questionOrder[gameid][questionid].index(playerid) + 1)}")
     questionScore = (1000 // (questionOrder[gameid][questionid].index(playerid) + 1)) # calculating the player's score based on the position they answered the question
@@ -330,8 +330,8 @@ def endGameLeaderboard(gameid):
         results = []
         for player in players:
             playerNames.append(player.playername)
-            playerScores.append(player.questionsanswered)
-            results.append([player.playername, player.questionsanswered]) # stores results in a way that can be handled by the table on leaderboard page easily
+            playerScores.append(player.score)
+            results.append([player.playername, player.score]) # stores results in a way that can be handled by the table on leaderboard page easily
         playerNames = playerNames[:3] # takes only the top three players to be displayed on the bar chart
         playerScores = playerScores[:3]
         return render_template('playerLeaderboard.html', gameid=gameid, playerNames=playerNames, playerScores=playerScores, results=results)

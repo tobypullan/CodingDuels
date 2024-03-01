@@ -36,7 +36,7 @@ class game_players(db.Model):
     # Sequence is used to auto increment the playerid when a new player is added to the table
     gameid = db.Column(db.Integer)
     playername = db.Column(db.String(255))
-    questionsanswered = db.Column(db.Integer)
+    #questionsanswered = db.Column(db.Integer)
     score = db.Column(db.Integer)
     def get_id(self):
            return (self.gameid)
