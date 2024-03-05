@@ -29,6 +29,7 @@ def index():
 @login_required
 def profile():
     playtime = Users.query.filter_by(personid=current_user.personid).first().playtime
+    playtime = playtime // 60 # converts playtime from seconds to minutes
     wins = Users.query.filter_by(personid=current_user.personid).first().wins
     return render_template('profile.html', name=current_user.name, playtime=playtime, wins=wins)
 
