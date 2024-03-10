@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, request, redirect, jsonify, current_app, flash, url_for
 from flask_login import login_required, current_user
 from .myapp import db
-from .models import Questions, Games, game_players, Users
+from .models import Questions, Games, game_players, Users, gamequestions
 #from sqlalchemy import update, func
 from random import randint
 import requests
@@ -29,7 +29,7 @@ def index():
 @login_required
 def profile():
     playtime = Users.query.filter_by(personid=current_user.personid).first().playtime
-    playtime = playtime // 60 # converts playtime from seconds to minutes
+    playtime = playtime // (60 * 1000) # converts playtime from seconds to minutes
     wins = Users.query.filter_by(personid=current_user.personid).first().wins
     return render_template('profile.html', name=current_user.name, playtime=playtime, wins=wins)
 
@@ -45,6 +45,9 @@ def create():
 @socketio.on("create game")
 def handle_create_game():
     gameid = randint(0, 1000000000)
+    newGame = Games(gameid=gameid, duration = 0, broadcast = False, fullresults=False) # adding the gameid and personid to the Games table by creating new object
+    db.session.add(newGame)
+    db.session.commit()
     questionOrder[gameid] = {} # storing gameid and creating the next layer of dictionary that contains the questionids and their respective playerids
     join_room(gameid)
     rooms[gameid] = request.sid # adding the gameid and the sid of the game creator to the rooms dictionary
@@ -55,7 +58,7 @@ def handle_create_game():
 def handle_select_question(data):
     print(rooms)
     questionid = Questions.query.filter_by(title=data["title"]).first()
-    newGameQuestion = Games(gameid=data["gameid"], gamequestions=questionid.questionid, personid=current_user.personid) # adding the gameid, questionid and personid to the Games table by creating new object
+    newGameQuestion = gamequestions(gameid=data["gameid"], questionid=questionid.questionid, personid=current_user.personid) # adding the gameid, questionid and personid to the Games table by creating new object
     db.session.add(newGameQuestion)
     db.session.commit() # committing the object to the database
     socketio.emit("question selected", {"title": questionid.title, "description": questionid.description, "difficulty": questionid.difficulty}, to=request.sid)
@@ -65,7 +68,7 @@ def handle_remove_question(questionTitle):
     questionid = Questions.query.filter_by(title=questionTitle["title"]).first()
     difficulty = questionid.difficulty
     description = questionid.description
-    db.session.query(Games).filter(Games.gamequestions == questionid.questionid).delete()
+    db.session.query(gamequestions).filter(gamequestions.questionid == questionid.questionid).delete()
     db.session.commit()
     socketio.emit("question removed", {"title": questionid.title, "description": description, "difficulty": difficulty}, to=request.sid)
 
@@ -107,10 +110,10 @@ def handle_connect_waiting_room(data):
 @main.route('/game/<gameid>') # page where gameid, questions, players in game are displayed and waiting for game to begin
 @login_required
 def game(gameid):
-    questions = Games.query.filter_by(gameid=gameid).all()
+    questions = gamequestions.query.filter_by(gameid=gameid).all()
     questionTitles = [] # storing the titles of the questions that are in the game
     for question in questions:
-        questionTitles.append(Questions.query.filter_by(questionid=question.gamequestions).first().title)
+        questionTitles.append(Questions.query.filter_by(questionid=question.questionid).first().title)
     return render_template('game.html', questions=questionTitles, gameid=gameid)
 
 # JOINING A GAME
@@ -160,7 +163,7 @@ def handle_join_game(data):
 
 @main.route('/game/<gameid>/waiting_room/<playerid>') # the waiting room where the player waits for the game to start
 def waiting_room(gameid, playerid):
-    return render_template('waiting_room.html', gameid=gameid, playerid=playerid)
+    return render_template('waitingRoom.html', gameid=gameid, playerid=playerid)
 
 @socketio.on("connect waiting room players")
 def handle_connect_waiting_room_players(data):
@@ -183,14 +186,14 @@ def handle_connect_competition(data):
 
 @main.route('/game/<gameid>/competition/<playerid>', methods=['GET'])
 def competition_player(gameid, playerid):
-    questions = Games.query.filter_by(gameid=gameid).all()
+    questions = gamequestions.query.filter_by(gameid=gameid).all()
     data = [] # contains title, description and questionid of the questions in the game
     gameduration = Games.query.filter_by(gameid=gameid).first().duration
     print(f"game duration: {gameduration}")
     for question in questions:
-        title = (Questions.query.filter_by(questionid=question.gamequestions).first().title)
-        description = (Questions.query.filter_by(questionid=question.gamequestions).first().description)
-        questionId = str(Questions.query.filter_by(questionid=question.gamequestions).first().questionid)
+        title = (Questions.query.filter_by(questionid=question.questionid).first().title)
+        description = (Questions.query.filter_by(questionid=question.questionid).first().description)
+        questionId = str(Questions.query.filter_by(questionid=question.questionid).first().questionid)
         data.append({"title": title, "description": description, "questionId": questionId}) # bundles all question data so that it can be easily passed to the competition.html page
     return render_template('competition.html', data=data, gameid=gameid, playerid=playerid, duration=gameduration)
 
@@ -205,8 +208,6 @@ def handle_correct_answer(data):
     else:
         questionOrder[gameid][questionid].append(playerid) # adds the player to the questionOrder so that the player's score can be calculated - players are added in order of answering the question
     questions = Questions.query.filter_by(title = questionName).first()
-    # db.session.query(game_players).filter(game_players.playerid == playerid).update({'questionsanswered': game_players.questionsanswered + 1})
-    # db.session.commit()
     print(f"player id index: {questionOrder[gameid][questionid].index(playerid)}")
     print(f"floor div using index + 1: {1000 // (questionOrder[gameid][questionid].index(playerid) + 1)}")
     questionScore = (1000 // (questionOrder[gameid][questionid].index(playerid) + 1)) # calculating the player's score based on the position they answered the question
@@ -271,7 +272,7 @@ def handle_leaderboard_connect(data):
 @login_required
 def leaderboard(gameid):
     players = game_players.query.filter_by(gameid=gameid).all() # gets all the players in the game
-    numberOfQuestions = len(Games.query.filter_by(gameid=gameid).all()) # gets the number of questions in the game as each question is stored as a separate row in the database
+    numberOfQuestions = len(gamequestions.query.filter_by(gameid=gameid).all()) # gets the number of questions in the game as each question is stored as a separate row in the database
     playerNames = []
     playerScores = []
     for player in players: # loops through the players and adds their names and scores to the playerNames and playerScores arrays
