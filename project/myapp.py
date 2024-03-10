@@ -8,6 +8,8 @@ from dotenv import load_dotenv
 # init SQLAlchemy so we can use it later in our models
 db = SQLAlchemy() # create a new SQLAlchemy object
 socketio = SocketIO() # create a new SocketIO object
+load_dotenv()
+
 def create_app(*args, **kwargs):
     print(args)
     print(kwargs) # takes arguments and keyword arguments provided by production server
@@ -15,8 +17,6 @@ def create_app(*args, **kwargs):
     
     print("socketio init")
     # this is the external connection url, not the internal one
-    engine = create_engine('postgresql://toby:GpYiCx5LQPoClKZI5TmIAXGIwIMyKDku@dpg-cl7mp02vokcc73anqkf0-a.frankfurt-postgres.render.com/codingduelsdb')
-    load_dotenv()
     app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
 
     app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL')
