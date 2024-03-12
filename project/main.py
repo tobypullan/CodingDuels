@@ -128,7 +128,12 @@ def joinGamePost():
     if gameid.isdigit() == False: # checking if the gameid entered contains any letters
         print("game id must be a number")
         flash("Game ID must be a number")
-        return redirect(url_for('main.joinGame'))   
+        return redirect(url_for('main.joinGame'))
+    else:
+        if gameid > 2147483646:
+            print("game id must be less than 2147483647")
+            flash("Game ID must be less than 2147483647")
+            return redirect(url_for('main.joinGame'))   
     game = Games.query.filter_by(gameid=gameid).first() # checking if the gameid entered exists
     if game is None: 
         print("game does not exist")
