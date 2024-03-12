@@ -130,7 +130,7 @@ def joinGamePost():
         flash("Game ID must be a number")
         return redirect(url_for('main.joinGame'))
     else:
-        if gameid > 2147483646:
+        if int(gameid) > 2147483646:
             print("game id must be less than 2147483647")
             flash("Game ID must be less than 2147483647")
             return redirect(url_for('main.joinGame'))   
