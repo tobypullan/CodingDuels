@@ -13,7 +13,7 @@ class Users(UserMixin, db.Model): # UserMixin allows server code to check if a u
            return (self.personid)
     
 class Questions(db.Model):
-    questionid = db.Column(db.Integer, primary_key=True) # primary keys are required by SQLAlchemy
+    questionid = db.Column(db.Integer, primary_key=True) 
     title = db.Column(db.String(1000))
     description = db.Column(db.String(1000))
     difficulty = db.Column(db.Integer)
@@ -31,7 +31,7 @@ class Games(db.Model):
            return (self.gameid)
     
 class game_players(db.Model):
-    playerid = db.Column(db.String(1000), Sequence('game_players_id_seq'), primary_key=True) # primary keys are required by SQLAlchemy
+    playerid = db.Column(db.String(1000), Sequence('game_players_id_seq'), primary_key=True)
     # Sequence is used to auto increment the playerid when a new player is added to the table
     gameid = db.Column(db.Integer)
     playername = db.Column(db.String(255))

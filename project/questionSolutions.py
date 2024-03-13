@@ -3,7 +3,7 @@ def Q4Ans(n): # finds sum of list recursively
     if len(n) == 0:
         return 0
     else:
-        return n[0] + Q4Ans(n[1:]) 
+        return n[0] + Q4Ans(n[1:])
     
 def Q5Ans(n): #first n terms of fibonacci sequence
     terms = ["1", "1"]

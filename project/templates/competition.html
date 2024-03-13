@@ -124,6 +124,7 @@
                 console.log("showing notification");
                 console.log(data);
                 var exisitingNotification = document.getElementById("notification");
+                // copilot autocompleted removal of previous notification
                 if (exisitingNotification) { // if already a notification, remove it
                     exisitingNotification.parentNode.removeChild(exisitingNotification);
                     console.log("removed existing notification");
@@ -136,12 +137,14 @@
                     notification.className = "notification is-danger";
                 }
                 notification.id = "notification";
-
+                
+                // copilot autocompleted position of notification
                 notification.style.position = "fixed"; // Position the notification fixed
                 notification.style.bottom = "20px"; // 20px from the bottom
                 notification.style.right = "20px"; // 20px from the right
 
                 notification.textContent = data; // set the text of the notification to the data
+                // copilot autocompleted delete button
                 var deleteButton = document.createElement("button");
                 deleteButton.className = "delete";
                 deleteButton.type = "button";
@@ -159,11 +162,12 @@
                 var question = data["question"];
                 var questionId = data["questionid"];
                 console.log("player correct answer")
-                showNotification(playername + " has answered " + question + " correctly", "correct");
+                showNotification(playername + " has answered " + question + " correctly", "correct"); // copilot autocompleted this line
             });
 
             socket.on("player incorrect answer", function (data) {
                 // similar to correct answer but for incorrect answers so the style of the notification is "incorrect"
+                // as it is similar, copilot autocompleted this function
                 var playername = data["player"];
                 var question = data["question"];
                 var questionId = data["questionid"];

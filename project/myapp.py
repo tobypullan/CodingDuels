@@ -40,5 +40,5 @@ def create_app(*args, **kwargs):
     # blueprint for non-auth parts of app
     from .main import main as main_blueprint
     app.register_blueprint(main_blueprint)
-    socketio.init_app(app, cors_allowed_origins="*") # allow all origins to connect to the socket, necessary for production
+    socketio.init_app(app, cors_allowed_origins="*") # allow all origins to connect to the socket, necessary for production, autocompleted by copilot
     return app

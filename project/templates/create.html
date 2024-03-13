@@ -66,6 +66,7 @@
           <option value="13">13</option>
           <option value="14">14</option>
           <option value="15">15</option>
+          <!-- copilot autocompleted these options -->
         </select>
       </div>
       <div class="column">
@@ -129,6 +130,7 @@
             <td>{{ question.title }}</td>
             <td>{{ question.difficulty }}</td>
             <td>{{ question.description }}</td>
+            <!-- copilot autocompleted the <td> tags -->
             <td>
               <button type="button" id="selectQuestionTable" class="button is-one-quarter selectQuestionTable"
                 titleData="{{ question.title}}"> Add </button>
@@ -236,6 +238,7 @@
       }
     }
     function addToSelection(data) { // add the question back to the selection table
+      // function autocompleted by copilot as similar to addQuestionToRemoval
       var table = document.getElementById("addTable");
       var row = document.createElement("tr");
       var question = document.createElement("td");
@@ -271,6 +274,7 @@
   </script>
   <script>
     function removeFromRemoval(title) { // remove question from the table of questions in the game
+      // function autocompleted by copilot as similar to removeQuestionFromSelection
       console.log("running remove from removal function")
       var table = document.getElementById("removeTable");
       var rows = table.getElementsByTagName("tr");

@@ -28,7 +28,7 @@ def index():
 @main.route('/profile')
 @login_required
 def profile():
-    playtime = Users.query.filter_by(personid=current_user.personid).first().playtime
+    playtime = Users.query.filter_by(personid=current_user.personid).first().playtime # copilot used to autocomplete query
     playtime = playtime // (60 * 1000) # converts playtime from seconds to minutes
     wins = Users.query.filter_by(personid=current_user.personid).first().wins
     return render_template('profile.html', name=current_user.name, playtime=playtime, wins=wins)
@@ -57,7 +57,7 @@ def handle_create_game():
 @socketio.on("select question")
 def handle_select_question(data):
     print(rooms)
-    questionid = Questions.query.filter_by(title=data["title"]).first()
+    questionid = Questions.query.filter_by(title=data["title"]).first() # copilot used to autocomplete query
     newGameQuestion = gamequestions(gameid=data["gameid"], questionid=questionid.questionid, personid=current_user.personid) # adding the gameid, questionid and personid to the Games table by creating new object
     db.session.add(newGameQuestion)
     db.session.commit() # committing the object to the database
@@ -95,6 +95,7 @@ def start_game():
     print(f"broadcast: {broadcast}")
     print(f"fullResults: {fullResults}")
     totaltime = int(seconds) + (int(minutes) * 60)
+    # copilot used to autocomplete query below
     db.session.query(Games).filter(Games.gameid == gameid).update({'duration': totaltime, 'broadcast': broadcast, 'fullresults': fullResults}) # updating the duration, broadcast and fullresults columns in the Games table
     db.session.commit()
     print(f"start game gameid: {gameid}")
@@ -149,7 +150,7 @@ def join_game(gameid):
 
 @main.route('/game/<gameid>/join', methods=['POST']) # handles the player name and adds the player to the game
 def join_game_post(gameid):
-    name = request.form.get('playername')
+    name = request.form.get('playername') # copilot used to autocomplete this line
     newPlayer = game_players(gameid=gameid, playername=name, score=0) # add the player that has just joined to the game players table
     db.session.add(newPlayer)
     db.session.commit()
@@ -161,7 +162,7 @@ def join_game_post(gameid):
 def handle_join_game(data):
     gameid = data["gameid"]
     join_room(gameid)
-    socketio.emit("game joined", {"success": True}, to=request.sid)
+    socketio.emit("game joined", {"success": True}, to=request.sid) # copilot used to autocomplete this line
     print("player joined room")
 
 # THE WAITING ROOM
@@ -174,8 +175,13 @@ def waiting_room(gameid, playerid):
 def handle_connect_waiting_room_players(data):
     gameid = int(data["gameid"])
     playerid = int(data["playerid"])
-    waitingRoomPlayers[playerid] = request.sid # players in the waiting room are added to the waitingRoomPlayers dictionary
-    print(f"waiting room players: {waitingRoomPlayers}")
+    # players in the waiting room are added to the waitingRoomPlayers dictionary
+    if gameid not in waitingRoomPlayers:
+        waitingRoomPlayers[gameid] = [playerid, request.sid]
+    else:
+        waitingRoomPlayers[gameid].append([playerid, request.sid])
+   
+    print(f"waiting room players: {waitingRoomPlayers}") # copilot used to autocomplete this line
     socketio.emit("player joined waiting room", to=request.sid)
 
 # PLAYING A GAME (PLAYER)
@@ -187,7 +193,7 @@ def handle_connect_competition(data):
         competitionPlayers[gameid] = [request.sid]
     else:
         competitionPlayers[gameid].append(request.sid) # adds the player to the competitionPlayers dictionary array combination
-    print(f"competition players: {competitionPlayers}")
+    print(f"competition players: {competitionPlayers}") # copilot used to autocomplete this line
 
 @main.route('/game/<gameid>/competition/<playerid>', methods=['GET'])
 def competition_player(gameid, playerid):
@@ -198,7 +204,7 @@ def competition_player(gameid, playerid):
     for question in questions:
         title = (Questions.query.filter_by(questionid=question.questionid).first().title)
         description = (Questions.query.filter_by(questionid=question.questionid).first().description)
-        questionId = str(Questions.query.filter_by(questionid=question.questionid).first().questionid)
+        questionId = str(Questions.query.filter_by(questionid=question.questionid).first().questionid) # copilot used to autocomplete these queries
         data.append({"title": title, "description": description, "questionId": questionId}) # bundles all question data so that it can be easily passed to the competition.html page
     return render_template('competition.html', data=data, gameid=gameid, playerid=playerid, duration=gameduration)
 
@@ -214,12 +220,13 @@ def handle_correct_answer(data):
         questionOrder[gameid][questionid].append(playerid) # adds the player to the questionOrder so that the player's score can be calculated - players are added in order of answering the question
     questions = Questions.query.filter_by(title = questionName).first()
     print(f"player id index: {questionOrder[gameid][questionid].index(playerid)}")
-    print(f"floor div using index + 1: {1000 // (questionOrder[gameid][questionid].index(playerid) + 1)}")
+    print(f"floor div using index + 1: {1000 // (questionOrder[gameid][questionid].index(playerid) + 1)}") # copilot used to autocomplete these print statements
     questionScore = (1000 // (questionOrder[gameid][questionid].index(playerid) + 1)) # calculating the player's score based on the position they answered the question
     print(f"question score: {questionScore}")
+    # copilot used to autocomplete the query below
     db.session.query(game_players).filter(game_players.playerid == playerid).update({'score': game_players.score + questionScore}) # adds the player's score to the game_players table
     db.session.commit()
-    playerName = game_players.query.filter_by(playerid=playerid).first().playername
+    playerName = game_players.query.filter_by(playerid=playerid).first().playername # copilot used to autocomplete this line
     socketio.emit('question answered', {'question': questionName, 'player': playerName, 'score': questionScore}, to=leaderboardrooms[int(gameid)])
     checkbroadcast = Games.query.filter_by(gameid=gameid).first().broadcast
     if checkbroadcast == True:
@@ -233,7 +240,7 @@ def handle_incorrect_answer(data):
     questionName = data['question']
     playerid = data['playerId']
     playerName = game_players.query.filter_by(playerid=playerid).first().playername
-    checkbroadcast = Games.query.filter_by(gameid=gameid).first().broadcast
+    checkbroadcast = Games.query.filter_by(gameid=gameid).first().broadcast # copilot used to autocomplete these queries
     if checkbroadcast == True:
         for player in competitionPlayers[gameid]:
             if player != request.sid: # doesn't tell the player that answered the question incorrectly that they answered the question incorrectly
@@ -252,7 +259,7 @@ def handle_increase_wins(data):
     playerid = data["playerid"]
     email = current_user.email
     print(email)
-    db.session.query(Users).filter(Users.email == email).update({'wins': Users.wins + 1}) # increments the player's wins by 1
+    db.session.query(Users).filter(Users.email == email).update({'wins': Users.wins + 1}) # increments the player's wins by 1, copilot used to autocomplete this line
     db.session.commit()
     print("increased wins")
 
@@ -262,11 +269,11 @@ def handle_increase_wins(data):
 def competition(gameid):
     print("testing game start post request")
     print(f"waiting room players: {waitingRoomPlayers}")
-    for player in waitingRoomPlayers:
-        print(f"player: {player}")
-        print(f"sid: {waitingRoomPlayers[player]}")
-        socketio.emit("game started", data={"gameid": gameid, "playerid":player}, to=waitingRoomPlayers[player]) # sends game started message to all players in the waiting room for that game to trigger them to recirect to the game
-    return redirect('/game/' + str(gameid) + '/competition/leaderboard')
+    for player in waitingRoomPlayers[gameid]:
+        print(f"player: {player[0]}")
+        print(f"sid: {waitingRoomPlayers[1]}")
+        socketio.emit("game started", data={"gameid": gameid, "playerid":player}, to=player[1]) # sends game started message to all players in the waiting room for that game to trigger them to recirect to the game
+    return redirect('/game/' + str(gameid) + '/competition/leaderboard') # copilot used to autocomplete this line
 
 @socketio.on("leaderboard connect")
 def handle_leaderboard_connect(data):
@@ -290,6 +297,7 @@ def handle_new_question(data):
     questionid = data["questionId"]
     playerid = data["playerId"]
     # dictionary maps each questionID to its respective function
+    # copilot used to autocomplete the function calls
     questionFileMatch = {"4": Q4(playerid), "5": Q5(playerid), "6": Q6(playerid), "7": Q7(playerid), "8": Q8(playerid), "9": Q9(playerid), "10": Q10(playerid), "11": Q11(playerid), "12": Q12(playerid), "13": Q13(playerid), "14": Q14(playerid), "15": Q15(playerid)}
     answer = questionFileMatch[questionid]
     print("changed input")
@@ -311,7 +319,7 @@ def handle_increase_time(data):
         # so that the player's time is only increased once
         print("increased time")
     elif playerid not in timeincrease[gameid]:
-        db.session.query(Users).filter(Users.email == email).update({'playtime': Users.playtime + gametime})
+        db.session.query(Users).filter(Users.email == email).update({'playtime': Users.playtime + gametime}) # copilot used to autocomplete the query
         db.session.commit()
         timeincrease[gameid][playerid] = True # adds the playerid to the gameid in the timeincrease dictionary so that the player's time is only increased once
         print("increased time")
@@ -336,6 +344,7 @@ def endGameLeaderboard(gameid):
         playerScores = []
         results = []
         for player in players:
+            # copilot used to autocomplete the first two list appends
             playerNames.append(player.playername)
             playerScores.append(player.score)
             results.append([player.playername, player.score]) # stores results in a way that can be handled by the table on leaderboard page easily
