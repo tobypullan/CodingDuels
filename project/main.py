@@ -177,7 +177,7 @@ def handle_connect_waiting_room_players(data):
     playerid = int(data["playerid"])
     # players in the waiting room are added to the waitingRoomPlayers dictionary
     if gameid not in waitingRoomPlayers:
-        waitingRoomPlayers[gameid] = [playerid, request.sid]
+        waitingRoomPlayers[gameid] = [[playerid, request.sid]]
     else:
         waitingRoomPlayers[gameid].append([playerid, request.sid])
    
@@ -269,10 +269,10 @@ def handle_increase_wins(data):
 def competition(gameid):
     print("testing game start post request")
     print(f"waiting room players: {waitingRoomPlayers}")
-    for player in waitingRoomPlayers[gameid]:
-        print(f"player: {player[0]}")
-        print(f"sid: {waitingRoomPlayers[1]}")
-        socketio.emit("game started", data={"gameid": gameid, "playerid":player}, to=player[1]) # sends game started message to all players in the waiting room for that game to trigger them to recirect to the game
+    for player in waitingRoomPlayers[int(gameid)]:
+        print(f"player: {player}")
+        print(f"sid: {player[1]}")
+        socketio.emit("game started", data={"gameid": gameid, "playerid":player[0]}, to=player[1]) # sends game started message to all players in the waiting room for that game to trigger them to recirect to the game
     return redirect('/game/' + str(gameid) + '/competition/leaderboard') # copilot used to autocomplete this line
 
 @socketio.on("leaderboard connect")
@@ -327,7 +327,7 @@ def handle_increase_time(data):
 @socketio.on("remove files")
 def handle_remove_files(data):
     playerid = data["playerid"]
-    for i in range(4,14):
+    for i in range(4,16):
         print(f"removing project/static/{playerid}{i}.txt")
         os.remove(f"project/static/{playerid}{i}.txt") # removes the files that were created for the player's questions
     socketio.emit("removed files", to=request.sid) # once files have been removed, tell client so that can redirect to the leaderboard page
